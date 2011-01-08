@@ -6,8 +6,7 @@
     <artifactId>jira-suite-utilities</artifactId>
     <name>JIRA Suite Utilities</name>
     <version>0.7.16-SNAPSHOT</version>
-<!--    <packaging>atlassian-plugin</packaging>-->
-    <packaging>jar</packaging>
+    <packaging>atlassian-plugin</packaging>
 
     <organization>
         <name>Quadratica SRL</name>
@@ -63,16 +62,16 @@
                     <target>1.5</target>
                 </configuration>
             </plugin>
-<!--            <plugin>-->
-<!--                <groupId>com.atlassian.maven.plugins</groupId>-->
-<!--                <artifactId>maven-jira-plugin</artifactId>-->
-<!--                <version>3.2</version>-->
-<!--                <extensions>true</extensions>-->
-<!--                <configuration>-->
-<!--                    <productVersion>${jira.version}</productVersion>-->
-<!--                    <productDataVersion>${jira.data.version}</productDataVersion>-->
-<!--                </configuration>-->
-<!--            </plugin>-->
+            <plugin>
+                <groupId>com.atlassian.maven.plugins</groupId>
+                <artifactId>maven-jira-plugin</artifactId>
+                <version>3.2</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <productVersion>${jira.version}</productVersion>
+                    <productDataVersion>${jira.data.version}</productDataVersion>
+                </configuration>
+            </plugin>
             <plugin>
                 <artifactId>maven-source-plugin</artifactId>
                 <executions>
