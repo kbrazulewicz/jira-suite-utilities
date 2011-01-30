@@ -352,7 +352,10 @@ public class CommonPluginUtils {
                 THUMBNAIL,
                 UPDATED,
                 VOTES,
-                WORKRATIO
+                WORKRATIO,
+                "worklog",
+                "aggregatetimeestimate",
+                "aggregatetimespent"
         );
     }
 
