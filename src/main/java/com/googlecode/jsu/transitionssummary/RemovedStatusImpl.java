@@ -82,4 +82,11 @@ public class RemovedStatusImpl implements Status {
     public int compareTo(Object arg0) {
         return 0;
     }
+
+    /* (non-Javadoc)
+     * @see com.atlassian.jira.issue.IssueConstant#getIconUrlHtml()
+     */
+    public String getIconUrlHtml() {
+        return "";
+    }
 }
