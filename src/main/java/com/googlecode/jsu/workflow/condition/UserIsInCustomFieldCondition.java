@@ -1,16 +1,18 @@
 package com.googlecode.jsu.workflow.condition;
 
+import static com.googlecode.jsu.workflow.WorkflowUserIsInCustomFieldConditionPluginFactory.getAllowUserInField;
+
 import java.util.Collection;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
 
 import com.atlassian.jira.issue.Issue;
+import com.atlassian.jira.issue.fields.Field;
 import com.atlassian.jira.workflow.condition.AbstractJiraCondition;
 import com.googlecode.jsu.util.WorkflowUtils;
 import com.opensymphony.module.propertyset.PropertySet;
 import com.opensymphony.user.EntityNotFoundException;
-import com.atlassian.jira.issue.fields.Field;
 import com.opensymphony.user.User;
 import com.opensymphony.user.UserManager;
 import com.opensymphony.workflow.WorkflowContext;
@@ -38,7 +40,7 @@ public class UserIsInCustomFieldCondition extends AbstractJiraCondition {
             // And groupsSelected will be an empty collection.
             String fieldKey = (String) args.get("fieldsList");
 
-			boolean allowUserInField = Boolean.valueOf((String) args.get("allowUserInField"));
+			boolean allowUserInField = getAllowUserInField(args);
 
             Field field = (Field) WorkflowUtils.getFieldFromKey(fieldKey);
             Issue issue = getIssue(transientVars);
