@@ -30,9 +30,9 @@ import com.atlassian.jira.issue.IssueRelationConstants;
 import com.atlassian.jira.issue.ModifiedValue;
 import com.atlassian.jira.issue.MutableIssue;
 import com.atlassian.jira.issue.customfields.CustomFieldType;
+import com.atlassian.jira.issue.customfields.MultipleCustomFieldType;
 import com.atlassian.jira.issue.customfields.impl.AbstractMultiCFType;
 import com.atlassian.jira.issue.customfields.impl.CascadingSelectCFType;
-import com.atlassian.jira.issue.customfields.impl.MultiSelectCFType;
 import com.atlassian.jira.issue.customfields.option.Option;
 import com.atlassian.jira.issue.customfields.view.CustomFieldParams;
 import com.atlassian.jira.issue.customfields.view.CustomFieldParamsImpl;
@@ -323,8 +323,8 @@ public class WorkflowUtils {
 
                 newValue = cfType.getValueFromCustomFieldParams(fieldParams);
             } else if (newValue instanceof Collection<?>) {
-                if ((customField.getCustomFieldType() instanceof MultiSelectCFType) ||
-                        (customField.getCustomFieldType() instanceof AbstractMultiCFType)) {
+                if ((customField.getCustomFieldType() instanceof AbstractMultiCFType) ||
+                        (customField.getCustomFieldType() instanceof MultipleCustomFieldType)) {
                     // format already correct
                 } else {
                     //convert from string to Object
