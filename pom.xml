@@ -5,7 +5,7 @@
     <groupId>com.googlecode</groupId>
     <artifactId>jira-suite-utilities</artifactId>
     <name>JIRA Suite Utilities</name>
-    <version>0.7.16-SNAPSHOT</version>
+    <version>0.7.17-SNAPSHOT</version>
     <packaging>atlassian-plugin</packaging>
 
     <organization>
@@ -97,6 +97,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-release-plugin</artifactId>
+                <version>2.1</version>
                 <configuration>
                     <tagBase>https://jira-suite-utilities.googlecode.com/svn/tags</tagBase>
                     <releaseProfiles>release</releaseProfiles>
