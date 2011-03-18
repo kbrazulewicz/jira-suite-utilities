@@ -11,9 +11,10 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
 import org.ofbiz.core.entity.GenericEntityException;
 import org.ofbiz.core.entity.GenericValue;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.atlassian.core.user.GroupUtils;
 import com.atlassian.core.user.UserUtils;
@@ -69,7 +70,7 @@ public class WorkflowUtils {
 
     public static final String CASCADING_SELECT_TYPE = "com.atlassian.jira.plugin.system.customfieldtypes:cascadingselect";
 
-    private static final Logger log = Logger.getLogger(WorkflowUtils.class);
+    private static final Logger log = LoggerFactory.getLogger(WorkflowUtils.class);
 
     /**
      * @param key

@@ -2,7 +2,8 @@ package com.googlecode.jsu.workflow.validator;
 
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.issue.Issue;
 import com.atlassian.jira.issue.fields.Field;
@@ -11,7 +12,7 @@ import com.googlecode.jsu.annotation.AnnotationProcessor;
 import com.googlecode.jsu.annotation.Argument;
 import com.googlecode.jsu.annotation.MapFieldProcessor;
 import com.googlecode.jsu.annotation.TransientVariable;
-import com.googlecode.jsu.util.CommonPluginUtils;
+import com.googlecode.jsu.util.FieldCollectionsUtils;
 import com.googlecode.jsu.util.ValidatorErrorsBuilder;
 import com.googlecode.jsu.util.WorkflowUtils;
 import com.opensymphony.module.propertyset.PropertySet;
@@ -26,11 +27,20 @@ import com.opensymphony.workflow.loader.WorkflowDescriptor;
  * @version $Id: GenericValidator.java 173 2008-10-14 13:04:43Z abashev $
  */
 public abstract class GenericValidator implements Validator {
-    private final Logger log = Logger.getLogger(this.getClass());
+    private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     private ValidatorErrorsBuilder errorBuilder;
     private FieldScreen fieldScreen = null;
     private Issue issue = null;
+
+    protected final FieldCollectionsUtils fieldCollectionsUtils;
+
+    /**
+     * @param fieldCollectionsUtils
+     */
+    public GenericValidator(FieldCollectionsUtils fieldCollectionsUtils) {
+        this.fieldCollectionsUtils = fieldCollectionsUtils;
+    }
 
     protected abstract void validate() throws InvalidInputException, WorkflowException;
 
@@ -100,7 +110,7 @@ public abstract class GenericValidator implements Validator {
             String messageIfOnScreen, String messageIfHidden
     ) {
         if (hasViewScreen()) {
-            if (CommonPluginUtils.isFieldOnScreen(this.issue, field, getFieldScreen())) {
+            if (fieldCollectionsUtils.isFieldOnScreen(this.issue, field, getFieldScreen())) {
                 this.errorBuilder.addError(field, messageIfOnScreen);
             } else {
                 this.errorBuilder.addError(messageIfHidden);

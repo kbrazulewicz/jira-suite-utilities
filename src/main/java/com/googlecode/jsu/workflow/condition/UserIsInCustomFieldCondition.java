@@ -5,7 +5,8 @@ import static com.googlecode.jsu.workflow.WorkflowUserIsInCustomFieldConditionPl
 import java.util.Collection;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.issue.Issue;
 import com.atlassian.jira.issue.fields.Field;
@@ -22,7 +23,7 @@ import com.opensymphony.workflow.WorkflowContext;
  * @author Anton Afanassiev
  */
 public class UserIsInCustomFieldCondition extends AbstractJiraCondition {
-    private final Logger log = Logger.getLogger(UserIsInCustomFieldCondition.class);
+    private final Logger log = LoggerFactory.getLogger(UserIsInCustomFieldCondition.class);
 
     /* (non-Javadoc)
      * @see com.opensymphony.workflow.Condition#passesCondition(java.util.Map, java.util.Map, com.opensymphony.module.propertyset.PropertySet)

@@ -2,7 +2,6 @@ package com.googlecode.jsu.workflow.validator;
 
 import static com.googlecode.jsu.helpers.ConditionCheckerFactory.EQUAL;
 import static com.googlecode.jsu.helpers.ConditionCheckerFactory.STRING;
-import static com.googlecode.jsu.util.CommonPluginUtils.isIssueHasField;
 import static com.googlecode.jsu.workflow.WorkflowFieldsRequiredValidatorPluginFactory.SELECTED_FIELDS;
 
 import java.util.Collection;
@@ -15,6 +14,7 @@ import com.atlassian.jira.issue.fields.Field;
 import com.googlecode.jsu.annotation.Argument;
 import com.googlecode.jsu.helpers.ConditionChecker;
 import com.googlecode.jsu.helpers.ConditionCheckerFactory;
+import com.googlecode.jsu.util.FieldCollectionsUtils;
 import com.googlecode.jsu.util.WorkflowUtils;
 import com.opensymphony.workflow.InvalidInputException;
 import com.opensymphony.workflow.WorkflowException;
@@ -34,8 +34,14 @@ public class FieldsRequiredValidator extends GenericValidator {
 
     /**
      * @param conditionCheckerFactory
+     * @param fieldCollectionsUtils
      */
-    public FieldsRequiredValidator(ConditionCheckerFactory conditionCheckerFactory) {
+    public FieldsRequiredValidator(
+            ConditionCheckerFactory conditionCheckerFactory,
+            FieldCollectionsUtils fieldCollectionsUtils
+    ) {
+        super(fieldCollectionsUtils);
+
         this.conditionCheckerFactory = conditionCheckerFactory;
     }
 
@@ -59,7 +65,7 @@ public class FieldsRequiredValidator extends GenericValidator {
         }
 
         for (Field field : fieldsSelected) {
-            if (isIssueHasField(issue, field)) {
+            if (fieldCollectionsUtils.isIssueHasField(issue, field)) {
                 Object fieldValue = WorkflowUtils.getFieldValueFromIssue(issue, field);
 
                 if (log.isDebugEnabled()) {

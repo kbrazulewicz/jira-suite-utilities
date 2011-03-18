@@ -2,7 +2,6 @@ package com.googlecode.jsu.workflow.validator;
 
 import static com.googlecode.jsu.helpers.ConditionCheckerFactory.DATE;
 import static com.googlecode.jsu.helpers.ConditionCheckerFactory.DATE_WITHOUT_TIME;
-import static com.googlecode.jsu.util.CommonPluginUtils.isFieldRequired;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -20,6 +19,7 @@ import com.googlecode.jsu.helpers.ComparisonType;
 import com.googlecode.jsu.helpers.ConditionChecker;
 import com.googlecode.jsu.helpers.ConditionCheckerFactory;
 import com.googlecode.jsu.helpers.ConditionType;
+import com.googlecode.jsu.util.FieldCollectionsUtils;
 import com.googlecode.jsu.util.WorkflowUtils;
 import com.opensymphony.workflow.InvalidInputException;
 import com.opensymphony.workflow.WorkflowException;
@@ -49,11 +49,15 @@ public class DateCompareValidator extends GenericValidator {
     /**
      * @param applicationProperties
      * @param conditionCheckerFactory
+     * @param fieldCollectionsUtils
      */
     public DateCompareValidator(
             ApplicationProperties applicationProperties,
-            ConditionCheckerFactory conditionCheckerFactory
+            ConditionCheckerFactory conditionCheckerFactory,
+            FieldCollectionsUtils fieldCollectionsUtils
     ) {
+        super(fieldCollectionsUtils);
+
         this.applicationProperties = applicationProperties;
         this.conditionCheckerFactory = conditionCheckerFactory;
     }
@@ -138,7 +142,7 @@ public class DateCompareValidator extends GenericValidator {
     private void validateRequired(Field fldDate) {
         final Issue issue = getIssue();
 
-        if (isFieldRequired(issue, fldDate)) {
+        if (fieldCollectionsUtils.isFieldRequired(issue, fldDate)) {
             this.setExceptionMessage(
                     fldDate,
                     fldDate.getName() + " is required.",

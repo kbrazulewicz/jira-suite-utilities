@@ -1,13 +1,14 @@
 package com.googlecode.jsu.helpers.checkers;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author <A href="mailto:abashev at gmail dot com">Alexey Abashev</A>
  * @version $Id$
  */
 public class CheckerCompositeFactory {
-    private static final Logger log = Logger.getLogger(CheckerCompositeFactory.class);
+    private static final Logger log = LoggerFactory.getLogger(CheckerCompositeFactory.class);
 
     /**
      * Create composite for checking values.

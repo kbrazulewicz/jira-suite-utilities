@@ -1,6 +1,7 @@
 package com.googlecode.jsu.helpers.checkers;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.googlecode.jsu.helpers.ConditionChecker;
 
@@ -9,7 +10,7 @@ import com.googlecode.jsu.helpers.ConditionChecker;
  * @version $Id$
  */
 class CheckerComposite implements ConditionChecker {
-    private final Logger log = Logger.getLogger(CheckerComposite.class);
+    private final Logger log = LoggerFactory.getLogger(CheckerComposite.class);
 
     private final ValueConverter valueConverter;
     private final ComparingSnipet comparingSnipet;

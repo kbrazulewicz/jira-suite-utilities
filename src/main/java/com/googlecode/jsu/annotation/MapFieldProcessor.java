@@ -6,14 +6,15 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author <A href="mailto:abashev at gmail dot com">Alexey Abashev</A>
  * @version $Id: MapFieldProcessor.java 105 2007-10-09 13:34:25Z abashev $
  */
 public class MapFieldProcessor extends AbstractVisitor {
-    private final Logger log = Logger.getLogger(MapFieldProcessor.class);
+    private final Logger log = LoggerFactory.getLogger(MapFieldProcessor.class);
 
     private final Class<? extends Annotation> annotation;
     private final Map<String, Object> values;

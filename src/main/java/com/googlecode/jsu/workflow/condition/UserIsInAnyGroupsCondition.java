@@ -4,7 +4,8 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.workflow.condition.AbstractJiraCondition;
 import com.googlecode.jsu.util.WorkflowUtils;
@@ -22,7 +23,7 @@ import com.opensymphony.workflow.WorkflowContext;
  *
  */
 public class UserIsInAnyGroupsCondition extends AbstractJiraCondition {
-    private final Logger log = Logger.getLogger(UserIsInAnyGroupsCondition.class);
+    private final Logger log = LoggerFactory.getLogger(UserIsInAnyGroupsCondition.class);
 
     /* (non-Javadoc)
      * @see com.opensymphony.workflow.Condition#passesCondition(java.util.Map, java.util.Map, com.opensymphony.module.propertyset.PropertySet)

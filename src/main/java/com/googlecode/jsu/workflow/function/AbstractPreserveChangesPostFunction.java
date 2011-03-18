@@ -4,7 +4,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.issue.history.ChangeItemBean;
 import com.atlassian.jira.issue.util.DefaultIssueChangeHolder;
@@ -22,7 +23,7 @@ import com.opensymphony.workflow.WorkflowException;
 abstract class AbstractPreserveChangesPostFunction extends AbstractJiraFunctionProvider {
     private static final String CHANGE_ITEMS = "changeItems";
 
-    protected final Logger log = Logger.getLogger(this.getClass());
+    protected final Logger log = LoggerFactory.getLogger(this.getClass());
 
     /**
      * Mirror for execute method but with holder for changes

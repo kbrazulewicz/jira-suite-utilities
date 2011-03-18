@@ -5,7 +5,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.googlecode.jsu.helpers.checkers.CheckerCompositeFactory;
 
@@ -55,7 +56,7 @@ public class ConditionCheckerFactory {
             put(DATE_WITHOUT_TIME.getId(), DATE_WITHOUT_TIME);
     }};
 
-    private final Logger log = Logger.getLogger(ConditionCheckerFactory.class);
+    private final Logger log = LoggerFactory.getLogger(ConditionCheckerFactory.class);
     private final CheckerCompositeFactory checkerCompositeFactory = new CheckerCompositeFactory();
 
     public ConditionChecker getChecker(ComparisonType type, ConditionType condition) {

@@ -1,13 +1,22 @@
 package com.googlecode.jsu.helpers;
 
+import static com.googlecode.jsu.helpers.ConditionCheckerFactory.DATE;
+import static com.googlecode.jsu.helpers.ConditionCheckerFactory.DATE_WITHOUT_TIME;
+import static com.googlecode.jsu.helpers.ConditionCheckerFactory.EQUAL;
+import static com.googlecode.jsu.helpers.ConditionCheckerFactory.GREATER;
+import static com.googlecode.jsu.helpers.ConditionCheckerFactory.GREATER_EQUAL;
+import static com.googlecode.jsu.helpers.ConditionCheckerFactory.LESS;
+import static com.googlecode.jsu.helpers.ConditionCheckerFactory.LESS_EQUAL;
+import static com.googlecode.jsu.helpers.ConditionCheckerFactory.NOT_EQUAL;
+import static com.googlecode.jsu.helpers.ConditionCheckerFactory.NUMBER;
+import static com.googlecode.jsu.helpers.ConditionCheckerFactory.STRING;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.util.Calendar;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 import org.junit.Before;
 import org.junit.Test;
-import static org.junit.Assert.*;
-import static com.googlecode.jsu.helpers.ConditionCheckerFactory.*;
 
 /**
  * @author <A href="mailto:abashev at gmail dot com">Alexey Abashev</A>
@@ -18,7 +27,7 @@ public class ConditionCheckerFactoryTest {
 
     @Before
     public void initFactory() {
-        Logger.getLogger("com.googlecode.jsu").setLevel(Level.DEBUG);
+//        Logger.getLogger("com.googlecode.jsu").setLevel(Level.DEBUG);
 
         this.factory = new ConditionCheckerFactory();
     }

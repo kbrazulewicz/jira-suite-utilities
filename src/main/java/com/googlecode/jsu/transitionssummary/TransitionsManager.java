@@ -8,8 +8,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.apache.log4j.Logger;
 import org.ofbiz.core.entity.GenericValue;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.atlassian.core.ofbiz.CoreFactory;
 import com.atlassian.core.util.map.EasyMap;
@@ -24,7 +25,7 @@ import com.atlassian.jira.ofbiz.OfBizDelegator;
  *
  */
 public class TransitionsManager {
-    private static final Logger log = Logger.getLogger(TransitionsManager.class);
+    private static final Logger log = LoggerFactory.getLogger(TransitionsManager.class);
 
     /**
      * @param gvIssue the current issue.
