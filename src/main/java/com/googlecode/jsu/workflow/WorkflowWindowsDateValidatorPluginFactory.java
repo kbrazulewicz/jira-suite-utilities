@@ -1,13 +1,13 @@
 package com.googlecode.jsu.workflow;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.atlassian.jira.issue.fields.Field;
 import com.atlassian.jira.plugin.workflow.AbstractWorkflowPluginFactory;
 import com.atlassian.jira.plugin.workflow.WorkflowPluginValidatorFactory;
-import com.googlecode.jsu.util.CommonPluginUtils;
+import com.googlecode.jsu.util.FieldCollectionsUtils;
 import com.googlecode.jsu.util.WorkflowUtils;
 import com.opensymphony.workflow.loader.AbstractDescriptor;
 import com.opensymphony.workflow.loader.ValidatorDescriptor;
@@ -19,24 +19,34 @@ import com.opensymphony.workflow.loader.ValidatorDescriptor;
  *
  */
 public class WorkflowWindowsDateValidatorPluginFactory extends
-AbstractWorkflowPluginFactory implements WorkflowPluginValidatorFactory {
+        AbstractWorkflowPluginFactory implements WorkflowPluginValidatorFactory {
+
+    private final FieldCollectionsUtils fieldCollectionsUtils;
+
+    /**
+     * @param fieldCollectionsUtils
+     */
+    public WorkflowWindowsDateValidatorPluginFactory(FieldCollectionsUtils fieldCollectionsUtils) {
+        this.fieldCollectionsUtils = fieldCollectionsUtils;
+    }
 
     /* (non-Javadoc)
      * @see com.googlecode.jsu.workflow.AbstractWorkflowPluginFactory#getVelocityParamsForInput(java.util.Map)
      */
-    protected void getVelocityParamsForInput(Map velocityParams) {
-        List allDateFiels = CommonPluginUtils.getAllDateFields();
+    protected void getVelocityParamsForInput(Map<String, Object> velocityParams) {
+        List<Field> allDateFields = fieldCollectionsUtils.getAllDateFields();
 
-        velocityParams.put("val-date1FieldsList", Collections.unmodifiableList(allDateFiels));
-        velocityParams.put("val-date2FieldsList", Collections.unmodifiableList(allDateFiels));
-
+        velocityParams.put("val-date1FieldsList", allDateFields);
+        velocityParams.put("val-date2FieldsList", allDateFields);
     }
 
     /* (non-Javadoc)
      * @see com.googlecode.jsu.workflow.AbstractWorkflowPluginFactory#getVelocityParamsForEdit(java.util.Map, com.opensymphony.workflow.loader.AbstractDescriptor)
      */
-    protected void getVelocityParamsForEdit(Map velocityParams,
-            AbstractDescriptor descriptor) {
+    protected void getVelocityParamsForEdit(
+            Map<String, Object> velocityParams,
+            AbstractDescriptor descriptor
+    ) {
         getVelocityParamsForInput(velocityParams);
 
         ValidatorDescriptor validatorDescriptor = (ValidatorDescriptor) descriptor;
@@ -55,8 +65,10 @@ AbstractWorkflowPluginFactory implements WorkflowPluginValidatorFactory {
     /* (non-Javadoc)
      * @see com.googlecode.jsu.workflow.AbstractWorkflowPluginFactory#getVelocityParamsForView(java.util.Map, com.opensymphony.workflow.loader.AbstractDescriptor)
      */
-    protected void getVelocityParamsForView(Map velocityParams,
-            AbstractDescriptor descriptor) {
+    protected void getVelocityParamsForView(
+            Map<String, Object> velocityParams,
+            AbstractDescriptor descriptor
+    ) {
         ValidatorDescriptor validatorDescriptor = (ValidatorDescriptor) descriptor;
         Map args = validatorDescriptor.getArgs();
 
@@ -73,8 +85,8 @@ AbstractWorkflowPluginFactory implements WorkflowPluginValidatorFactory {
     /* (non-Javadoc)
      * @see com.googlecode.jsu.workflow.WorkflowPluginFactory#getDescriptorParams(java.util.Map)
      */
-    public Map getDescriptorParams(Map validatorParams) {
-        Map params = new HashMap();
+    public Map<String, ?> getDescriptorParams(Map<String, Object> validatorParams) {
+        Map<String, Object> params = new HashMap<String, Object>();
 
         try{
             String date1 = extractSingleParam(validatorParams, "date1FieldsList");

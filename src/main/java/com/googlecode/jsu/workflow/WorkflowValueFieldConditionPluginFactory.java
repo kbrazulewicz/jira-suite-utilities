@@ -10,7 +10,7 @@ import com.atlassian.jira.plugin.workflow.WorkflowPluginConditionFactory;
 import com.googlecode.jsu.helpers.ComparisonType;
 import com.googlecode.jsu.helpers.ConditionCheckerFactory;
 import com.googlecode.jsu.helpers.ConditionType;
-import com.googlecode.jsu.util.CommonPluginUtils;
+import com.googlecode.jsu.util.FieldCollectionsUtils;
 import com.googlecode.jsu.util.WorkflowUtils;
 import com.opensymphony.workflow.loader.AbstractDescriptor;
 import com.opensymphony.workflow.loader.ConditionDescriptor;
@@ -25,19 +25,25 @@ public class WorkflowValueFieldConditionPluginFactory extends
         AbstractWorkflowPluginFactory implements WorkflowPluginConditionFactory {
 
     private final ConditionCheckerFactory conditionCheckerFactory;
+    private final FieldCollectionsUtils fieldCollectionsUtils;
 
     /**
      * @param conditionCheckerFactory
+     * @param fieldCollectionsUtils
      */
-    public WorkflowValueFieldConditionPluginFactory(ConditionCheckerFactory conditionCheckerFactory) {
+    public WorkflowValueFieldConditionPluginFactory(
+            ConditionCheckerFactory conditionCheckerFactory,
+            FieldCollectionsUtils fieldCollectionsUtils
+    ) {
         this.conditionCheckerFactory = conditionCheckerFactory;
+        this.fieldCollectionsUtils = fieldCollectionsUtils;
     }
 
     /* (non-Javadoc)
      * @see com.googlecode.jsu.workflow.AbstractWorkflowPluginFactory#getVelocityParamsForInput(java.util.Map)
      */
-    protected void getVelocityParamsForInput(Map velocityParams) {
-        List fields = CommonPluginUtils.getValueFieldConditionFields();
+    protected void getVelocityParamsForInput(Map<String, Object> velocityParams) {
+        List<Field> fields = fieldCollectionsUtils.getValueFieldConditionFields();
 
         List<ConditionType> conditionList = conditionCheckerFactory.getConditionTypes();
         List<ComparisonType> comparisonList = conditionCheckerFactory.getComparisonTypes();
@@ -51,7 +57,7 @@ public class WorkflowValueFieldConditionPluginFactory extends
      * @see com.googlecode.jsu.workflow.AbstractWorkflowPluginFactory#getVelocityParamsForEdit(java.util.Map, com.opensymphony.workflow.loader.AbstractDescriptor)
      */
     protected void getVelocityParamsForEdit(
-            Map velocityParams,	AbstractDescriptor descriptor
+            Map<String, Object> velocityParams,	AbstractDescriptor descriptor
     ) {
         getVelocityParamsForInput(velocityParams);
 
@@ -84,7 +90,7 @@ public class WorkflowValueFieldConditionPluginFactory extends
     /* (non-Javadoc)
      * @see com.googlecode.jsu.workflow.AbstractWorkflowPluginFactory#getVelocityParamsForView(java.util.Map, com.opensymphony.workflow.loader.AbstractDescriptor)
      */
-    protected void getVelocityParamsForView(Map velocityParams, AbstractDescriptor descriptor) {
+    protected void getVelocityParamsForView(Map<String, Object> velocityParams, AbstractDescriptor descriptor) {
         ConditionDescriptor conditionDescriptor = (ConditionDescriptor) descriptor;
         Map args = conditionDescriptor.getArgs();
 
@@ -116,8 +122,8 @@ public class WorkflowValueFieldConditionPluginFactory extends
     /* (non-Javadoc)
      * @see com.googlecode.jsu.workflow.WorkflowPluginFactory#getDescriptorParams(java.util.Map)
      */
-    public Map getDescriptorParams(Map conditionParams) {
-        Map params = new HashMap();
+    public Map<String, ?> getDescriptorParams(Map<String, Object> conditionParams) {
+        Map<String, Object> params = new HashMap<String, Object>();
 
         try {
             String field = extractSingleParam(conditionParams, "fieldsList");

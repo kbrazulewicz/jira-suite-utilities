@@ -41,7 +41,7 @@
     <customfield-searcher key="textsearcher"
                 name="Free Text Searcher"
                   i18n-name-key="admin.customfield.searcher.textsearcher.name"
-                  class="com.googlecode.jsu.customfields.TextSearcher">
+                  class="com.atlassian.jira.issue.customfields.searchers.TextSearcher">
 
         <description key="admin.customfield.searcher.textsearcher.desc">Search for values using a free text search.</description>
 
@@ -209,10 +209,16 @@
 
     <!-- Components -->
     <component key="conditionCheckerFactory"
-           class="com.googlecode.jsu.helpers.ConditionCheckerFactory"
-           interface="com.googlecode.jsu.helpers.ConditionCheckerFactory"
-           public="true">
+               class="com.googlecode.jsu.helpers.ConditionCheckerFactory"
+               interface="com.googlecode.jsu.helpers.ConditionCheckerFactory" public="true">
 
-    <description>Provide service for checking conditions</description>
-  </component>
+        <description>Provide service for checking conditions</description>
+    </component>
+
+    <component key="fieldCollectionsUtils"
+               class="com.googlecode.jsu.util.FieldCollectionsUtils"
+               interface="com.googlecode.jsu.util.FieldCollectionsUtils" public="false">
+
+        <description>This utils class exposes common methods to get field collections</description>
+    </component>
 </atlassian-plugin>

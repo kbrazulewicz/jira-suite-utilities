@@ -1,7 +1,5 @@
 package com.googlecode.jsu.customfields;
 
-import static com.googlecode.jsu.util.ComponentUtils.getComponent;
-
 import com.atlassian.jira.issue.customfields.converters.StringConverter;
 import com.atlassian.jira.issue.customfields.impl.RenderableTextCFType;
 import com.atlassian.jira.issue.customfields.manager.GenericConfigManager;
@@ -15,13 +13,15 @@ import com.atlassian.jira.issue.customfields.persistence.CustomFieldValuePersist
  */
 public class LocationTextCFType extends RenderableTextCFType {
     /**
-     * Default constructor without injection.
+     * @param customFieldValuePersister
+     * @param stringConverter
+     * @param genericConfigManager
      */
-    public LocationTextCFType() {
-        super(
-                getComponent(CustomFieldValuePersister.class),
-                getComponent(StringConverter.class),
-                getComponent(GenericConfigManager.class)
-        );
+    public LocationTextCFType(
+            CustomFieldValuePersister customFieldValuePersister,
+            StringConverter stringConverter,
+            GenericConfigManager genericConfigManager
+    ) {
+        super(customFieldValuePersister, stringConverter, genericConfigManager);
     }
 }

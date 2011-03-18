@@ -14,7 +14,7 @@ import com.atlassian.jira.plugin.workflow.WorkflowPluginValidatorFactory;
 import com.googlecode.jsu.helpers.ConditionCheckerFactory;
 import com.googlecode.jsu.helpers.ConditionType;
 import com.googlecode.jsu.helpers.YesNoType;
-import com.googlecode.jsu.util.CommonPluginUtils;
+import com.googlecode.jsu.util.FieldCollectionsUtils;
 import com.googlecode.jsu.util.WorkflowUtils;
 import com.opensymphony.workflow.loader.AbstractDescriptor;
 import com.opensymphony.workflow.loader.ValidatorDescriptor;
@@ -29,19 +29,25 @@ public class WorkflowDateCompareValidatorPluginFactory extends
         AbstractWorkflowPluginFactory implements WorkflowPluginValidatorFactory {
 
     private final ConditionCheckerFactory conditionCheckerFactory;
+    private final FieldCollectionsUtils fieldCollectionsUtils;
 
     /**
      * @param conditionCheckerFactory
+     * @param fieldCollectionsUtils
      */
-    public WorkflowDateCompareValidatorPluginFactory(ConditionCheckerFactory conditionCheckerFactory) {
+    public WorkflowDateCompareValidatorPluginFactory(
+            ConditionCheckerFactory conditionCheckerFactory,
+            FieldCollectionsUtils fieldCollectionsUtils
+    ) {
         this.conditionCheckerFactory = conditionCheckerFactory;
+        this.fieldCollectionsUtils = fieldCollectionsUtils;
     }
 
     /* (non-Javadoc)
      * @see com.googlecode.jsu.workflow.AbstractWorkflowPluginFactory#getVelocityParamsForInput(java.util.Map)
      */
-    protected void getVelocityParamsForInput(Map velocityParams) {
-        List<Field> allDateFields = CommonPluginUtils.getAllDateFields();
+    protected void getVelocityParamsForInput(Map<String, Object> velocityParams) {
+        List<Field> allDateFields = fieldCollectionsUtils.getAllDateFields();
         List<ConditionType> conditionList = conditionCheckerFactory.getConditionTypes();
 
         velocityParams.put("val-date1FieldsList", allDateFields);
@@ -54,8 +60,10 @@ public class WorkflowDateCompareValidatorPluginFactory extends
     /* (non-Javadoc)
      * @see com.googlecode.jsu.workflow.AbstractWorkflowPluginFactory#getVelocityParamsForEdit(java.util.Map, com.opensymphony.workflow.loader.AbstractDescriptor)
      */
-    protected void getVelocityParamsForEdit(Map velocityParams,
-            AbstractDescriptor descriptor) {
+    protected void getVelocityParamsForEdit(
+            Map<String, Object> velocityParams,
+            AbstractDescriptor descriptor
+    ) {
         getVelocityParamsForInput(velocityParams);
 
         ValidatorDescriptor validatorDescriptor = (ValidatorDescriptor) descriptor;
@@ -73,14 +81,15 @@ public class WorkflowDateCompareValidatorPluginFactory extends
         velocityParams.put("val-date2Selected", WorkflowUtils.getFieldFromKey(date2));
         velocityParams.put("val-conditionSelected", condition);
         velocityParams.put("val-includeTimeSelected", ynTime);
-
     }
 
     /* (non-Javadoc)
      * @see com.googlecode.jsu.workflow.AbstractWorkflowPluginFactory#getVelocityParamsForView(java.util.Map, com.opensymphony.workflow.loader.AbstractDescriptor)
      */
-    protected void getVelocityParamsForView(Map velocityParams,
-            AbstractDescriptor descriptor) {
+    protected void getVelocityParamsForView(
+            Map<String, Object> velocityParams,
+            AbstractDescriptor descriptor
+    ) {
         ValidatorDescriptor validatorDescriptor = (ValidatorDescriptor) descriptor;
         Map args = validatorDescriptor.getArgs();
 
@@ -96,14 +105,13 @@ public class WorkflowDateCompareValidatorPluginFactory extends
         velocityParams.put("val-date2Selected", WorkflowUtils.getFieldFromKey(date2));
         velocityParams.put("val-conditionSelected", condition);
         velocityParams.put("val-includeTimeSelected", ynTime);
-
     }
 
     /* (non-Javadoc)
      * @see com.googlecode.jsu.workflow.WorkflowPluginFactory#getDescriptorParams(java.util.Map)
      */
-    public Map getDescriptorParams(Map validatorParams) {
-        Map params = new HashMap();
+    public Map<String, ?> getDescriptorParams(Map<String, Object> validatorParams) {
+        Map<String, Object> params = new HashMap<String, Object>();
 
         try{
             String date1 = extractSingleParam(validatorParams, "date1FieldsList");
@@ -116,11 +124,10 @@ public class WorkflowDateCompareValidatorPluginFactory extends
             params.put("conditionSelected", condition);
             params.put("includeTimeSelected", includeTime);
 
-        }catch(IllegalArgumentException iae){
+        } catch(IllegalArgumentException iae) {
             // Aggregate so that Transitions can be added.
         }
 
         return params;
     }
-
 }

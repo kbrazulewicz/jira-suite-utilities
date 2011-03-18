@@ -1,7 +1,5 @@
 package com.googlecode.jsu.customfields;
 
-import static com.googlecode.jsu.util.ComponentUtils.getComponent;
-
 import com.atlassian.jira.issue.customfields.converters.SelectConverter;
 import com.atlassian.jira.issue.customfields.converters.StringConverter;
 import com.atlassian.jira.issue.customfields.impl.SelectCFType;
@@ -17,15 +15,19 @@ import com.atlassian.jira.issue.customfields.persistence.CustomFieldValuePersist
  */
 public class LocationSelectCFType extends SelectCFType {
     /**
-     * Default constructor without injection.
+     * @param customFieldValuePersister
+     * @param stringConverter
+     * @param selectConverter
+     * @param optionsManager
+     * @param genericConfigManager
      */
-    public LocationSelectCFType() {
-        super(
-                getComponent(CustomFieldValuePersister.class),
-                getComponent(StringConverter.class),
-                getComponent(SelectConverter.class),
-                getComponent(OptionsManager.class),
-                getComponent(GenericConfigManager.class)
-        );
+    public LocationSelectCFType(
+            CustomFieldValuePersister customFieldValuePersister,
+            StringConverter stringConverter,
+            SelectConverter selectConverter,
+            OptionsManager optionsManager,
+            GenericConfigManager genericConfigManager
+    ) {
+        super(customFieldValuePersister, stringConverter, selectConverter, optionsManager, genericConfigManager);
     }
 }

@@ -10,7 +10,7 @@ import java.util.Map;
 import com.atlassian.jira.issue.fields.Field;
 import com.atlassian.jira.plugin.workflow.AbstractWorkflowPluginFactory;
 import com.atlassian.jira.plugin.workflow.WorkflowPluginFunctionFactory;
-import com.googlecode.jsu.util.CommonPluginUtils;
+import com.googlecode.jsu.util.FieldCollectionsUtils;
 import com.opensymphony.workflow.loader.AbstractDescriptor;
 
 /**
@@ -23,6 +23,15 @@ public class WorkflowClearFieldValueFunctionPluginFactory
     public static final String FIELD = "field";
     public static final String SELECTED_FIELD = "selectedField";
     public static final String FIELD_LIST = "fieldList";
+
+    private final FieldCollectionsUtils fieldCollectionsUtils;
+
+    /**
+     * @param fieldCollectionsUtils
+     */
+    public WorkflowClearFieldValueFunctionPluginFactory(FieldCollectionsUtils fieldCollectionsUtils) {
+        this.fieldCollectionsUtils = fieldCollectionsUtils;
+    }
 
     /* (non-Javadoc)
      * @see com.googlecode.jsu.workflow.AbstractWorkflowPluginFactory#getVelocityParamsForEdit(java.util.Map, com.opensymphony.workflow.loader.AbstractDescriptor)
@@ -39,7 +48,7 @@ public class WorkflowClearFieldValueFunctionPluginFactory
      */
     @SuppressWarnings("unchecked")
     protected void getVelocityParamsForInput(Map velocityParams) {
-        List<Field> fields = CommonPluginUtils.getAllEditableFields();
+        List<Field> fields = fieldCollectionsUtils.getAllEditableFields();
 
         velocityParams.put(FIELD_LIST, Collections.unmodifiableList(fields));
     }

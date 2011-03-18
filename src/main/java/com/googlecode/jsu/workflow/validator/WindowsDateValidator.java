@@ -5,12 +5,11 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
-import com.atlassian.jira.ManagerFactory;
 import com.atlassian.jira.config.properties.APKeys;
 import com.atlassian.jira.config.properties.ApplicationProperties;
 import com.atlassian.jira.issue.fields.Field;
 import com.googlecode.jsu.annotation.Argument;
-import com.googlecode.jsu.util.CommonPluginUtils;
+import com.googlecode.jsu.util.FieldCollectionsUtils;
 import com.googlecode.jsu.util.WorkflowUtils;
 import com.opensymphony.workflow.InvalidInputException;
 import com.opensymphony.workflow.WorkflowException;
@@ -32,6 +31,21 @@ public class WindowsDateValidator extends GenericValidator {
 
     @Argument
     private String windowsDays;
+
+    private final ApplicationProperties applicationProperties;
+
+    /**
+     * @param fieldCollectionsUtils
+     * @param applicationProperties
+     */
+    public WindowsDateValidator(
+            FieldCollectionsUtils fieldCollectionsUtils,
+            ApplicationProperties applicationProperties
+    ) {
+        super(fieldCollectionsUtils);
+
+        this.applicationProperties = applicationProperties;
+    }
 
     /* (non-Javadoc)
      * @see com.googlecode.jsu.workflow.validator.GenericValidator#validate()
@@ -61,8 +75,7 @@ public class WindowsDateValidator extends GenericValidator {
 
         if ((objDate1 != null) && (objDate2 != null)) {
             // It Takes the Locale for inicialize dates.
-            ApplicationProperties ap = ManagerFactory.getApplicationProperties();
-            Locale locale = ap.getDefaultLocale();
+            Locale locale = applicationProperties.getDefaultLocale();
 
             Calendar calDate1 = Calendar.getInstance(locale);
             Calendar calDate2 = Calendar.getInstance(locale);
@@ -73,8 +86,8 @@ public class WindowsDateValidator extends GenericValidator {
             calWindowsDate.setTime((Date) objDate2);
             calWindowsDate.add(Calendar.DATE, Integer.parseInt(window));
 
-            CommonPluginUtils.clearCalendarTimePart(calDate1);
-            CommonPluginUtils.clearCalendarTimePart(calDate2);
+            fieldCollectionsUtils.clearCalendarTimePart(calDate1);
+            fieldCollectionsUtils.clearCalendarTimePart(calDate2);
 
             Date date1 = calDate1.getTime();
             Date date2 = calDate2.getTime();
@@ -93,10 +106,10 @@ public class WindowsDateValidator extends GenericValidator {
             if (!condOK) {
                 // Formats date to current locale, for display the Exception.
                 SimpleDateFormat defaultFormatter = new SimpleDateFormat(
-                        ap.getDefaultString(APKeys.JIRA_DATE_PICKER_JAVA_FORMAT)
+                        applicationProperties.getDefaultString(APKeys.JIRA_DATE_PICKER_JAVA_FORMAT)
                 );
                 SimpleDateFormat formatter = new SimpleDateFormat(
-                        ap.getDefaultString(APKeys.JIRA_DATE_PICKER_JAVA_FORMAT), locale
+                        applicationProperties.getDefaultString(APKeys.JIRA_DATE_PICKER_JAVA_FORMAT), locale
                 );
 
                 String errorMsg = "";
@@ -135,7 +148,7 @@ public class WindowsDateValidator extends GenericValidator {
      * Throws an Exception if the field is null, but it is required.
      */
     private void validateRequired(Field fldDate){
-        if (CommonPluginUtils.isFieldRequired(getIssue(), fldDate)) {
+        if (fieldCollectionsUtils.isFieldRequired(getIssue(), fldDate)) {
             this.setExceptionMessage(
                     fldDate,
                     fldDate.getName() + " is required.",

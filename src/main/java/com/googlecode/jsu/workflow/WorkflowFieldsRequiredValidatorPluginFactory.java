@@ -8,7 +8,7 @@ import java.util.Map;
 import com.atlassian.jira.issue.fields.Field;
 import com.atlassian.jira.plugin.workflow.AbstractWorkflowPluginFactory;
 import com.atlassian.jira.plugin.workflow.WorkflowPluginValidatorFactory;
-import com.googlecode.jsu.util.CommonPluginUtils;
+import com.googlecode.jsu.util.FieldCollectionsUtils;
 import com.googlecode.jsu.util.WorkflowUtils;
 import com.opensymphony.workflow.loader.AbstractDescriptor;
 import com.opensymphony.workflow.loader.ValidatorDescriptor;
@@ -24,11 +24,20 @@ public class WorkflowFieldsRequiredValidatorPluginFactory
 
     public static final String SELECTED_FIELDS = "hidFieldsList";
 
+    private final FieldCollectionsUtils fieldCollectionsUtils;
+
+    /**
+     * @param fieldCollectionsUtils
+     */
+    public WorkflowFieldsRequiredValidatorPluginFactory(FieldCollectionsUtils fieldCollectionsUtils) {
+        this.fieldCollectionsUtils = fieldCollectionsUtils;
+    }
+
     /* (non-Javadoc)
      * @see com.googlecode.jsu.workflow.AbstractWorkflowPluginFactory#getVelocityParamsForInput(java.util.Map)
      */
-    protected void getVelocityParamsForInput(Map velocityParams) {
-        List<Field> allFields = CommonPluginUtils.getRequirableFields();
+    protected void getVelocityParamsForInput(Map<String, Object> velocityParams) {
+        List<Field> allFields = fieldCollectionsUtils.getRequirableFields();
 
         velocityParams.put("val-fieldsList", allFields);
         velocityParams.put("val-splitter", WorkflowUtils.SPLITTER);
@@ -38,7 +47,7 @@ public class WorkflowFieldsRequiredValidatorPluginFactory
      * @see com.googlecode.jsu.workflow.AbstractWorkflowPluginFactory#getVelocityParamsForEdit(java.util.Map, com.opensymphony.workflow.loader.AbstractDescriptor)
      */
     protected void getVelocityParamsForEdit(
-            Map velocityParams, AbstractDescriptor descriptor
+            Map<String, Object> velocityParams, AbstractDescriptor descriptor
     ) {
         getVelocityParamsForInput(velocityParams);
 
@@ -48,7 +57,7 @@ public class WorkflowFieldsRequiredValidatorPluginFactory
         velocityParams.remove("val-fieldsList");
 
         Collection<Field> fieldsSelected = getSelectedFields(args);
-        List<Field> allFields = CommonPluginUtils.getRequirableFields();
+        List<Field> allFields = fieldCollectionsUtils.getRequirableFields();
 
         allFields.removeAll(fieldsSelected);
 
@@ -61,7 +70,7 @@ public class WorkflowFieldsRequiredValidatorPluginFactory
      * @see com.googlecode.jsu.workflow.AbstractWorkflowPluginFactory#getVelocityParamsForView(java.util.Map, com.opensymphony.workflow.loader.AbstractDescriptor)
      */
     protected void getVelocityParamsForView(
-            Map velocityParams, AbstractDescriptor descriptor
+            Map<String, Object> velocityParams, AbstractDescriptor descriptor
     ) {
         ValidatorDescriptor validatorDescriptor = (ValidatorDescriptor) descriptor;
         Map<String, Object> args = validatorDescriptor.getArgs();
@@ -72,7 +81,7 @@ public class WorkflowFieldsRequiredValidatorPluginFactory
     /* (non-Javadoc)
      * @see com.googlecode.jsu.workflow.WorkflowPluginFactory#getDescriptorParams(java.util.Map)
      */
-    public Map getDescriptorParams(Map validatorParams) {
+    public Map<String, ?> getDescriptorParams(Map<String, Object> validatorParams) {
         Map<String, String> params = new HashMap<String, String>();
         String strFieldsSelected = extractSingleParam(validatorParams, SELECTED_FIELDS);
 
