@@ -3,12 +3,12 @@ package com.googlecode.jsu.workflow.validator;
 import static com.googlecode.jsu.helpers.ConditionCheckerFactory.EQUAL;
 import static com.googlecode.jsu.helpers.ConditionCheckerFactory.STRING;
 import static com.googlecode.jsu.util.CommonPluginUtils.isIssueHasField;
-import static com.googlecode.jsu.util.ComponentUtils.getComponent;
 import static com.googlecode.jsu.workflow.WorkflowFieldsRequiredValidatorPluginFactory.SELECTED_FIELDS;
 
 import java.util.Collection;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.issue.Issue;
 import com.atlassian.jira.issue.fields.Field;
@@ -25,16 +25,24 @@ import com.opensymphony.workflow.WorkflowException;
  * @author Gustavo Martin
  */
 public class FieldsRequiredValidator extends GenericValidator {
-    private static final Logger log = Logger.getLogger(FieldsRequiredValidator.class);
+    private static final Logger log = LoggerFactory.getLogger(FieldsRequiredValidator.class);
 
     @Argument(SELECTED_FIELDS)
     private String fieldList;
+
+    private final ConditionCheckerFactory conditionCheckerFactory;
+
+    /**
+     * @param conditionCheckerFactory
+     */
+    public FieldsRequiredValidator(ConditionCheckerFactory conditionCheckerFactory) {
+        this.conditionCheckerFactory = conditionCheckerFactory;
+    }
 
     /* (non-Javadoc)
      * @see com.opensymphony.workflow.Validator#validate(java.util.Map, java.util.Map, com.opensymphony.module.propertyset.PropertySet)
      */
     protected void validate() throws InvalidInputException, WorkflowException {
-        final ConditionCheckerFactory conditionCheckerFactory = getComponent(ConditionCheckerFactory.class);
         final ConditionChecker checker = conditionCheckerFactory.getChecker(STRING, EQUAL);
 
         // It obtains the fields that are required for the transition.

@@ -5,7 +5,7 @@
     <groupId>com.googlecode</groupId>
     <artifactId>jira-suite-utilities</artifactId>
     <name>JIRA Suite Utilities</name>
-    <version>0.7.16-SNAPSHOT</version>
+    <version>0.8.1-SNAPSHOT</version>
     <packaging>atlassian-plugin</packaging>
 
     <organization>
@@ -58,14 +58,14 @@
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <source>1.5</source>
-                    <target>1.5</target>
+                    <source>1.6</source>
+                    <target>1.6</target>
                 </configuration>
             </plugin>
             <plugin>
                 <groupId>com.atlassian.maven.plugins</groupId>
                 <artifactId>maven-jira-plugin</artifactId>
-                <version>3.2</version>
+                <version>${jira.plugin.version}</version>
                 <extensions>true</extensions>
                 <configuration>
                     <productVersion>${jira.version}</productVersion>
@@ -188,8 +188,9 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <jira.version>4.1.2</jira.version>
-        <jira.data.version>4.1.1</jira.data.version>
+        <jira.version>4.3</jira.version>
+        <jira.data.version>4.3</jira.data.version>
+        <jira.plugin.version>3.2.4</jira.plugin.version>
 
         <scm.connection>scm:hg:git+ssh://git@github.com:abashev/jira-suite-utilities.git</scm.connection>
     </properties>

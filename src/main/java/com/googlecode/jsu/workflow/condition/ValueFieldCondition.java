@@ -1,10 +1,9 @@
 package com.googlecode.jsu.workflow.condition;
 
-import static com.googlecode.jsu.util.ComponentUtils.getComponent;
-
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.issue.Issue;
 import com.atlassian.jira.issue.fields.Field;
@@ -21,7 +20,16 @@ import com.opensymphony.module.propertyset.PropertySet;
  * @author Gustavo Martin
  */
 public class ValueFieldCondition extends AbstractJiraCondition {
-    private final Logger log = Logger.getLogger(ValueFieldCondition.class);
+    private final Logger log = LoggerFactory.getLogger(ValueFieldCondition.class);
+
+    private final ConditionCheckerFactory conditionCheckerFactory;
+
+    /**
+     * @param conditionCheckerFactory
+     */
+    public ValueFieldCondition(ConditionCheckerFactory conditionCheckerFactory) {
+        this.conditionCheckerFactory = conditionCheckerFactory;
+    }
 
     /* (non-Javadoc)
      * @see com.opensymphony.workflow.Condition#passesCondition(java.util.Map, java.util.Map, com.opensymphony.module.propertyset.PropertySet)
@@ -31,7 +39,6 @@ public class ValueFieldCondition extends AbstractJiraCondition {
             @SuppressWarnings("rawtypes") Map args,
             PropertySet ps
     ) {
-        final ConditionCheckerFactory conditionCheckerFactory = getComponent(ConditionCheckerFactory.class);
         final Issue issue = getIssue(transientVars);
 
         String fieldId = (String) args.get("fieldsList");

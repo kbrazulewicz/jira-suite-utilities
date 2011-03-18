@@ -3,14 +3,13 @@ package com.googlecode.jsu.workflow.validator;
 import static com.googlecode.jsu.helpers.ConditionCheckerFactory.DATE;
 import static com.googlecode.jsu.helpers.ConditionCheckerFactory.DATE_WITHOUT_TIME;
 import static com.googlecode.jsu.util.CommonPluginUtils.isFieldRequired;
-import static com.googlecode.jsu.util.CommonPluginUtils.isIssueHasField;
-import static com.googlecode.jsu.util.ComponentUtils.getComponent;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.atlassian.jira.config.properties.APKeys;
 import com.atlassian.jira.config.properties.ApplicationProperties;
@@ -42,24 +41,27 @@ public class DateCompareValidator extends GenericValidator {
     @Argument("includeTimeSelected")
     private String includeTimeValue;
 
-    private final Logger log = Logger.getLogger(DateCompareValidator.class);
+    private final Logger log = LoggerFactory.getLogger(DateCompareValidator.class);
+
     private final ApplicationProperties applicationProperties;
+    private final ConditionCheckerFactory conditionCheckerFactory;
 
     /**
+     * @param applicationProperties
      * @param conditionCheckerFactory
      */
     public DateCompareValidator(
-            ApplicationProperties applicationProperties
+            ApplicationProperties applicationProperties,
+            ConditionCheckerFactory conditionCheckerFactory
     ) {
         this.applicationProperties = applicationProperties;
+        this.conditionCheckerFactory = conditionCheckerFactory;
     }
 
     /* (non-Javadoc)
      * @see com.googlecode.jsu.workflow.validator.GenericValidator#validate()
      */
     protected void validate() throws InvalidInputException, WorkflowException {
-        final ConditionCheckerFactory conditionCheckerFactory = getComponent(ConditionCheckerFactory.class);
-
         Field field1 = WorkflowUtils.getFieldFromKey(date1);
         Field field2 = WorkflowUtils.getFieldFromKey(date2);
 
