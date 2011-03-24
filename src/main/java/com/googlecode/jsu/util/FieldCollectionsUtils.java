@@ -37,9 +37,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.apache.log4j.Logger;
 import org.ofbiz.core.entity.model.ModelEntity;
 import org.ofbiz.core.entity.model.ModelField;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.atlassian.core.ofbiz.CoreFactory;
 import com.atlassian.jira.ComponentManager;
@@ -78,7 +79,7 @@ import com.googlecode.jsu.helpers.NameComparatorEx;
  * @version $Id$
  */
 public class FieldCollectionsUtils {
-    private static final Logger log = Logger.getLogger(FieldCollectionsUtils.class);
+    private static final Logger log = LoggerFactory.getLogger(FieldCollectionsUtils.class);
 
     private static final Collection<String> TIME_TRACKING_FIELDS = Arrays.asList(
             IssueFieldConstants.TIME_ESTIMATE,
@@ -90,7 +91,7 @@ public class FieldCollectionsUtils {
     /**
      * @return a complete list of fields, including custom fields.
      */
-    public static List<Field> getAllFields() {
+    public List<Field> getAllFields() {
         final FieldManager fieldManager = ManagerFactory.getFieldManager();
         Set<Field> allFieldsSet = new TreeSet<Field>(getComparator());
 
@@ -108,7 +109,7 @@ public class FieldCollectionsUtils {
     /**
      * @return a list of fields, including custom fields, which could be modified.
      */
-    public static List<Field> getAllEditableFields(){
+    public List<Field> getAllEditableFields(){
         final FieldManager fieldManager = ManagerFactory.getFieldManager();
         Set<Field> allFields = new TreeSet<Field>(getComparator());
 
@@ -129,7 +130,7 @@ public class FieldCollectionsUtils {
      * @param allFields list of fields to be sorted.
      * @return a list with fields sorted by name.
      */
-    public static List<Field> sortFields(List<Field> allFields) {
+    public List<Field> sortFields(List<Field> allFields) {
         Collections.sort(allFields, getComparator());
 
         return allFields;
@@ -138,7 +139,7 @@ public class FieldCollectionsUtils {
     /**
      * @return a list of all fields of type date and datetime.
      */
-    public static List<Field> getAllDateFields() {
+    public List<Field> getAllDateFields() {
         List<Field> allDateFields = new ArrayList<Field>();
 
         List<CustomField> fields = ManagerFactory.getCustomFieldManager().getCustomFieldObjects();
@@ -173,7 +174,7 @@ public class FieldCollectionsUtils {
      * @param fieldScreen wished screen
      * @return if a field is displayed in a screen.
      */
-    public static boolean isFieldOnScreen(Issue issue, Field field, FieldScreen fieldScreen){
+    public boolean isFieldOnScreen(Issue issue, Field field, FieldScreen fieldScreen){
         final FieldManager fieldManager = ComponentManager.getInstance().getFieldManager();
 
         if (fieldManager.isCustomField(field)) {
@@ -211,7 +212,7 @@ public class FieldCollectionsUtils {
      * @param field: wished field
      * @return if a field is available.
      */
-    public static boolean isIssueHasField(Issue issue, Field field) {
+    public boolean isIssueHasField(Issue issue, Field field) {
         final FieldManager fieldManager = ManagerFactory.getFieldManager();
         final String fieldId = field.getId();
 
@@ -242,7 +243,7 @@ public class FieldCollectionsUtils {
         return true;
     }
 
-    public static FieldLayoutItem getFieldLayoutItem(Issue issue, Field field) throws FieldLayoutStorageException {
+    public FieldLayoutItem getFieldLayoutItem(Issue issue, Field field) throws FieldLayoutStorageException {
         final FieldLayoutManager fieldLayoutManager = ComponentManager.getInstance().getFieldLayoutManager();
 
         FieldLayout layout = fieldLayoutManager.getFieldLayout(
@@ -262,7 +263,7 @@ public class FieldCollectionsUtils {
      * @param field: wished field
      * @return if a field is required.
      */
-    public static boolean isFieldRequired(Issue issue, Field field) {
+    public boolean isFieldRequired(Issue issue, Field field) {
         boolean retVal = false;
 
         try {
@@ -281,7 +282,7 @@ public class FieldCollectionsUtils {
     /**
      * @return a list of fields that could be chosen to copy their value.
      */
-    public static List<Field> getCopyFromFields(){
+    public List<Field> getCopyFromFields(){
         List<Field> allFields = getAllFields();
 
         allFields.removeAll(getNonCopyFromFields());
@@ -292,7 +293,7 @@ public class FieldCollectionsUtils {
     /**
      * @return a list of fields that will be eliminated from getCopyFromFields().
      */
-    private static List<Field> getNonCopyFromFields(){
+    private List<Field> getNonCopyFromFields(){
         return asFields(
                 ATTACHMENT,
                 COMMENT,
@@ -307,7 +308,7 @@ public class FieldCollectionsUtils {
     /**
      * @return a list of fields that could be chosen to copy their value.
      */
-    public static List<Field> getCopyToFields(){
+    public List<Field> getCopyToFields(){
         List<Field> allFields = getAllEditableFields();
         allFields.removeAll(getNonCopyToFields());
 
@@ -317,7 +318,7 @@ public class FieldCollectionsUtils {
     /**
      * @return a list of fields that will be eliminated from getCopyFromFields().
      */
-    private static List<Field> getNonCopyToFields(){
+    private List<Field> getNonCopyToFields(){
         return asFields(
                 ATTACHMENT,
                 COMMENT,
@@ -346,7 +347,7 @@ public class FieldCollectionsUtils {
     /**
      * @return a list of fields that could be chosen like required.
      */
-    public static List<Field> getRequirableFields(){
+    public List<Field> getRequirableFields(){
         List<Field> allFields = getAllFields();
 
         allFields.removeAll(getNonRequirableFields());
@@ -357,7 +358,7 @@ public class FieldCollectionsUtils {
     /**
      * @return a list of fields that will be eliminated from getRequirableFields().
      */
-    private static List<Field> getNonRequirableFields(){
+    private List<Field> getNonRequirableFields(){
         return asFields(
                 CREATED,
                 TIMETRACKING,
@@ -384,7 +385,7 @@ public class FieldCollectionsUtils {
     /**
      * @return a list of fields that could be chosen in Value-Field Condition.
      */
-    public static List<Field> getValueFieldConditionFields(){
+    public List<Field> getValueFieldConditionFields(){
         List<Field> allFields = getAllFields();
 
         allFields.removeAll(getNonValueFieldConditionFields());
@@ -397,7 +398,7 @@ public class FieldCollectionsUtils {
     /**
      * @return a list of fields that will be eliminated from getValueFieldConditionFields().
      */
-    private static List<Field> getNonValueFieldConditionFields(){
+    private List<Field> getNonValueFieldConditionFields(){
         return asFields(
                 ATTACHMENT,
                 COMMENT,
@@ -418,7 +419,7 @@ public class FieldCollectionsUtils {
      * Clear the time part from a given Calendar.
      *
      */
-    public static void clearCalendarTimePart(Calendar cal) {
+    public void clearCalendarTimePart(Calendar cal) {
         cal.set(Calendar.HOUR_OF_DAY, 0);
         cal.set(Calendar.MINUTE, 0);
         cal.set(Calendar.SECOND, 0);
