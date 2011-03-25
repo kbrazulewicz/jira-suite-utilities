@@ -44,7 +44,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.atlassian.core.ofbiz.CoreFactory;
-import com.atlassian.jira.ComponentManager;
 import com.atlassian.jira.config.properties.ApplicationProperties;
 import com.atlassian.jira.issue.CustomFieldManager;
 import com.atlassian.jira.issue.Issue;
@@ -71,7 +70,6 @@ import com.atlassian.jira.util.I18nHelper;
 import com.atlassian.jira.util.I18nHelper.BeanFactory;
 import com.atlassian.jira.web.FieldVisibilityManager;
 import com.atlassian.jira.web.util.OutlookDateManager;
-import com.atlassian.plugin.util.Assertions;
 import com.googlecode.jsu.helpers.NameComparatorEx;
 
 /**
@@ -121,21 +119,6 @@ public class FieldCollectionsUtils {
         this.fieldLayoutManager = fieldLayoutManager;
         this.customFieldManager = customFieldManager;
         this.fieldVisibilityManager = fieldVisibilityManager;
-    }
-
-    /**
-     * Get instance.
-     *
-     * @return
-     */
-    public static FieldCollectionsUtils getInstance() {
-        final FieldCollectionsUtils instance = ComponentManager.getOSGiComponentInstanceOfType(
-                FieldCollectionsUtils.class
-        );
-
-        Assertions.notNull("fieldCollectionsUtils", instance);
-
-        return instance;
     }
 
     /**

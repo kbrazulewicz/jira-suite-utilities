@@ -340,7 +340,7 @@ public class WorkflowUtils {
             }
 
             try {
-                fieldLayoutItem = FieldCollectionsUtils.getInstance().getFieldLayoutItem(issue, field);
+                fieldLayoutItem = fieldCollectionsUtils.getFieldLayoutItem(issue, field);
             } catch (FieldLayoutStorageException e) {
                 log.error("Unable to get field layout item", e);
 
