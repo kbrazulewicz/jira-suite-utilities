@@ -3,7 +3,7 @@ package com.googlecode.jsu.helpers;
 import java.util.Comparator;
 
 import com.atlassian.jira.issue.fields.Field;
-import com.atlassian.jira.web.bean.I18nBean;
+import com.atlassian.jira.util.I18nHelper;
 
 /**
  * @author Gustavo Martin
@@ -12,10 +12,10 @@ import com.atlassian.jira.web.bean.I18nBean;
  *
  */
 public class NameComparatorEx implements Comparator<Field> {
-    private final I18nBean i18nBean;
+    private final I18nHelper i18nHelper;
 
-    public NameComparatorEx(I18nBean i18nBean) {
-        this.i18nBean = i18nBean;
+    public NameComparatorEx(I18nHelper i18nHelper) {
+        this.i18nHelper = i18nHelper;
     }
 
     public int compare(Field o1, Field o2) {
@@ -24,8 +24,8 @@ public class NameComparatorEx implements Comparator<Field> {
         if (o2 == null)
             throw new IllegalArgumentException("The second parameter is null");
 
-        String name1 = i18nBean.getText(o1.getName());
-        String name2 = i18nBean.getText(o2.getName());
+        String name1 = i18nHelper.getText(o1.getName());
+        String name2 = i18nHelper.getText(o2.getName());
 
         return name1.compareTo(name2);
     }

@@ -15,6 +15,15 @@ import com.opensymphony.workflow.WorkflowException;
  * This function copies the value from a field to another one.
  */
 public class CopyValueFromOtherFieldPostFunction extends AbstractPreserveChangesPostFunction {
+    private final WorkflowUtils workflowUtils;
+
+    /**
+     * @param workflowUtils
+     */
+    public CopyValueFromOtherFieldPostFunction(WorkflowUtils workflowUtils) {
+        this.workflowUtils = workflowUtils;
+    }
+
     /* (non-Javadoc)
      * @see com.googlecode.jsu.workflow.function.AbstractPreserveChangesPostFunction#executeFunction(java.util.Map, java.util.Map, com.opensymphony.module.propertyset.PropertySet, com.atlassian.jira.issue.util.IssueChangeHolder)
      */
@@ -26,8 +35,8 @@ public class CopyValueFromOtherFieldPostFunction extends AbstractPreserveChanges
         String fieldFromKey = (String) args.get("sourceField");
         String fieldToKey = (String) args.get("destinationField");
 
-        Field fieldFrom = (Field) WorkflowUtils.getFieldFromKey(fieldFromKey);
-        Field fieldTo = (Field) WorkflowUtils.getFieldFromKey(fieldToKey);
+        Field fieldFrom = workflowUtils.getFieldFromKey(fieldFromKey);
+        Field fieldTo = workflowUtils.getFieldFromKey(fieldToKey);
 
         String fieldFromName = (fieldFrom != null) ? fieldFrom.getName() : fieldFromKey;
         String fieldToName = (fieldTo != null) ? fieldTo.getName() : fieldToKey;
@@ -36,7 +45,7 @@ public class CopyValueFromOtherFieldPostFunction extends AbstractPreserveChanges
             MutableIssue issue = getIssue(transientVars);
 
             // It gives the value from the source field.
-            Object sourceValue = WorkflowUtils.getFieldValueFromIssue(issue, fieldFrom);
+            Object sourceValue = workflowUtils.getFieldValueFromIssue(issue, fieldFrom);
 
             if (log.isDebugEnabled()) {
                 log.debug(
@@ -50,7 +59,7 @@ public class CopyValueFromOtherFieldPostFunction extends AbstractPreserveChanges
             }
 
             // It set the value to field.
-            WorkflowUtils.setFieldValue(issue, fieldToKey, sourceValue, holder);
+            workflowUtils.setFieldValue(issue, fieldToKey, sourceValue, holder);
 
             if (log.isDebugEnabled()) {
                 log.debug("Value was successfully copied");

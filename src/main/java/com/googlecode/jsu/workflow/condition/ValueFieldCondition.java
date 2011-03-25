@@ -23,12 +23,15 @@ public class ValueFieldCondition extends AbstractJiraCondition {
     private final Logger log = LoggerFactory.getLogger(ValueFieldCondition.class);
 
     private final ConditionCheckerFactory conditionCheckerFactory;
+    private final WorkflowUtils workflowUtils;
 
     /**
      * @param conditionCheckerFactory
+     * @param workflowUtils
      */
-    public ValueFieldCondition(ConditionCheckerFactory conditionCheckerFactory) {
+    public ValueFieldCondition(ConditionCheckerFactory conditionCheckerFactory, WorkflowUtils workflowUtils) {
         this.conditionCheckerFactory = conditionCheckerFactory;
+        this.workflowUtils = workflowUtils;
     }
 
     /* (non-Javadoc)
@@ -50,8 +53,8 @@ public class ValueFieldCondition extends AbstractJiraCondition {
         boolean result = false;
 
         try {
-            Field field = WorkflowUtils.getFieldFromKey(fieldId);
-            Object fieldValue = WorkflowUtils.getFieldValueFromIssue(issue, field);
+            Field field = workflowUtils.getFieldFromKey(fieldId);
+            Object fieldValue = workflowUtils.getFieldValueFromIssue(issue, field);
 
             result = conditionCheckerFactory.
                     getChecker(comparison, condition).

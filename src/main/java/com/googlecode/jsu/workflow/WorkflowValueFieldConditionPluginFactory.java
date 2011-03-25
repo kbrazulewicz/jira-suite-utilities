@@ -26,6 +26,7 @@ public class WorkflowValueFieldConditionPluginFactory extends
 
     private final ConditionCheckerFactory conditionCheckerFactory;
     private final FieldCollectionsUtils fieldCollectionsUtils;
+    private final WorkflowUtils workflowUtils;
 
     /**
      * @param conditionCheckerFactory
@@ -33,10 +34,12 @@ public class WorkflowValueFieldConditionPluginFactory extends
      */
     public WorkflowValueFieldConditionPluginFactory(
             ConditionCheckerFactory conditionCheckerFactory,
-            FieldCollectionsUtils fieldCollectionsUtils
+            FieldCollectionsUtils fieldCollectionsUtils,
+            WorkflowUtils workflowUtils
     ) {
         this.conditionCheckerFactory = conditionCheckerFactory;
         this.fieldCollectionsUtils = fieldCollectionsUtils;
+        this.workflowUtils = workflowUtils;
     }
 
     /* (non-Javadoc)
@@ -72,7 +75,7 @@ public class WorkflowValueFieldConditionPluginFactory extends
         Field field = null;
 
         try {
-            field = WorkflowUtils.getFieldFromKey(sField);
+            field = workflowUtils.getFieldFromKey(sField);
         } catch (Exception e) {
         }
 
@@ -102,7 +105,7 @@ public class WorkflowValueFieldConditionPluginFactory extends
         Field field = null;
 
         try {
-            field = WorkflowUtils.getFieldFromKey(sField);
+            field = workflowUtils.getFieldFromKey(sField);
         } catch (Exception e) {
         }
 

@@ -8,14 +8,13 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.atlassian.crowd.embedded.api.User;
 import com.atlassian.jira.issue.Issue;
 import com.atlassian.jira.issue.fields.Field;
+import com.atlassian.jira.user.util.UserManager;
 import com.atlassian.jira.workflow.condition.AbstractJiraCondition;
 import com.googlecode.jsu.util.WorkflowUtils;
 import com.opensymphony.module.propertyset.PropertySet;
-import com.opensymphony.user.EntityNotFoundException;
-import com.opensymphony.user.User;
-import com.opensymphony.user.UserManager;
 import com.opensymphony.workflow.WorkflowContext;
 
 /**
@@ -25,45 +24,58 @@ import com.opensymphony.workflow.WorkflowContext;
 public class UserIsInCustomFieldCondition extends AbstractJiraCondition {
     private final Logger log = LoggerFactory.getLogger(UserIsInCustomFieldCondition.class);
 
+    private final UserManager userManager;
+    private final WorkflowUtils workflowUtils;
+
+    /**
+     * @param userManager
+     * @param workflowUtils
+     */
+    public UserIsInCustomFieldCondition(UserManager userManager, WorkflowUtils workflowUtils) {
+        this.userManager = userManager;
+        this.workflowUtils = workflowUtils;
+    }
+
     /* (non-Javadoc)
      * @see com.opensymphony.workflow.Condition#passesCondition(java.util.Map, java.util.Map, com.opensymphony.module.propertyset.PropertySet)
      */
-    @SuppressWarnings("rawtypes")
     public boolean passesCondition(Map transientVars, Map args, PropertySet ps) {
         boolean allowUser = false;
 
-        try {
-            // Obtains the current user.
-            WorkflowContext context = (WorkflowContext) transientVars.get("context");
-            User userLogged = UserManager.getInstance().getUser(context.getCaller());
+        // Obtains the current user.
+        WorkflowContext context = (WorkflowContext) transientVars.get("context");
+        User userLogged = userManager.getUserObject(context.getCaller());
 
-            // If there aren't groups selected, hidGroupsList is equal to "".
-            // And groupsSelected will be an empty collection.
-            String fieldKey = (String) args.get("fieldsList");
+        if (userLogged == null) {
+            log.warn("Unable to check condition");
 
-			boolean allowUserInField = getAllowUserInField(args);
+            return false;
+        }
 
-            Field field = (Field) WorkflowUtils.getFieldFromKey(fieldKey);
-            Issue issue = getIssue(transientVars);
+        // If there aren't groups selected, hidGroupsList is equal to "".
+        // And groupsSelected will be an empty collection.
+        String fieldKey = (String) args.get("fieldsList");
 
-            Object fieldValue = WorkflowUtils.getFieldValueFromIssue(issue, field);
+        boolean allowUserInField = getAllowUserInField(args);
 
-            if (fieldValue != null) {
-                if (fieldValue instanceof Collection) {
-                    // support for MultiUser lists. user must be member of that list to pass condition
-                    for (Object value : (Collection) fieldValue) {
-                        allowUser = compareValues(value, userLogged, allowUserInField);
+        Field field = workflowUtils.getFieldFromKey(fieldKey);
+        Issue issue = getIssue(transientVars);
 
-                        if (allowUser == allowUserInField) {
-                            break;
-                        }
+        Object fieldValue = workflowUtils.getFieldValueFromIssue(issue, field);
+
+        if (fieldValue != null) {
+            if (fieldValue instanceof Collection) {
+                // support for MultiUser lists. user must be member of that list to pass condition
+                for (Object value : (Collection) fieldValue) {
+                    allowUser = compareValues(value, userLogged, allowUserInField);
+
+                    if (allowUser == allowUserInField) {
+                        break;
                     }
-                } else {
-                    allowUser = compareValues(fieldValue, userLogged, allowUserInField);
                 }
+            } else {
+                allowUser = compareValues(fieldValue, userLogged, allowUserInField);
             }
-        } catch (EntityNotFoundException e) {
-            log.error("Unable to find user from context", e);
         }
 
         return allowUser;

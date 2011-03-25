@@ -40,9 +40,10 @@ public class WindowsDateValidator extends GenericValidator {
      */
     public WindowsDateValidator(
             FieldCollectionsUtils fieldCollectionsUtils,
-            ApplicationProperties applicationProperties
+            ApplicationProperties applicationProperties,
+            WorkflowUtils workflowUtils
     ) {
-        super(fieldCollectionsUtils);
+        super(fieldCollectionsUtils, workflowUtils);
 
         this.applicationProperties = applicationProperties;
     }
@@ -51,8 +52,8 @@ public class WindowsDateValidator extends GenericValidator {
      * @see com.googlecode.jsu.workflow.validator.GenericValidator#validate()
      */
     protected void validate() throws InvalidInputException, WorkflowException {
-        Field fldDate1 = WorkflowUtils.getFieldFromKey(date1);
-        Field fldDate2 = WorkflowUtils.getFieldFromKey(date2);
+        Field fldDate1 = workflowUtils.getFieldFromKey(date1);
+        Field fldDate2 = workflowUtils.getFieldFromKey(date2);
 
         // Compare Dates.
         if ((fldDate1 != null) && (fldDate2 != null)) {
@@ -70,8 +71,8 @@ public class WindowsDateValidator extends GenericValidator {
     private void checkDatesCondition(Field fldDate1, Field fldDate2, String window) {
         boolean condOK = false;
 
-        Object objDate1 = WorkflowUtils.getFieldValueFromIssue(getIssue(), fldDate1);
-        Object objDate2 = WorkflowUtils.getFieldValueFromIssue(getIssue(), fldDate2);
+        Object objDate1 = workflowUtils.getFieldValueFromIssue(getIssue(), fldDate1);
+        Object objDate2 = workflowUtils.getFieldValueFromIssue(getIssue(), fldDate2);
 
         if ((objDate1 != null) && (objDate2 != null)) {
             // It Takes the Locale for inicialize dates.

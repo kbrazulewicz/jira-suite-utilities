@@ -34,6 +34,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -44,9 +45,8 @@ import org.slf4j.LoggerFactory;
 
 import com.atlassian.core.ofbiz.CoreFactory;
 import com.atlassian.jira.ComponentManager;
-import com.atlassian.jira.ManagerFactory;
 import com.atlassian.jira.config.properties.ApplicationProperties;
-import com.atlassian.jira.config.properties.ApplicationPropertiesImpl;
+import com.atlassian.jira.issue.CustomFieldManager;
 import com.atlassian.jira.issue.Issue;
 import com.atlassian.jira.issue.IssueFieldConstants;
 import com.atlassian.jira.issue.customfields.CustomFieldType;
@@ -68,8 +68,10 @@ import com.atlassian.jira.issue.fields.screen.FieldScreen;
 import com.atlassian.jira.issue.fields.screen.FieldScreenLayoutItem;
 import com.atlassian.jira.issue.fields.screen.FieldScreenTab;
 import com.atlassian.jira.util.I18nHelper;
+import com.atlassian.jira.util.I18nHelper.BeanFactory;
 import com.atlassian.jira.web.FieldVisibilityManager;
-import com.atlassian.jira.web.bean.I18nBean;
+import com.atlassian.jira.web.util.OutlookDateManager;
+import com.atlassian.plugin.util.Assertions;
 import com.googlecode.jsu.helpers.NameComparatorEx;
 
 /**
@@ -88,11 +90,58 @@ public class FieldCollectionsUtils {
             IssueFieldConstants.TIMETRACKING
     );
 
+    private final I18nHelper.BeanFactory i18nHelper;
+    private final ApplicationProperties applicationProperties;
+    private final OutlookDateManager outlookDateManager;
+    private final FieldManager fieldManager;
+    private final FieldLayoutManager fieldLayoutManager;
+    private final CustomFieldManager customFieldManager;
+    private final FieldVisibilityManager fieldVisibilityManager;
+
+    /**
+     * @param i18nHelper
+     * @param applicationProperties
+     * @param outlookDateManager
+     * @param fieldManager
+     * @param fieldLayoutManager
+     * @param customFieldManager
+     * @param fieldVisibilityManager
+     */
+    public FieldCollectionsUtils(
+            BeanFactory i18nHelper, ApplicationProperties applicationProperties,
+            OutlookDateManager outlookDateManager, FieldManager fieldManager,
+            FieldLayoutManager fieldLayoutManager,
+            CustomFieldManager customFieldManager,
+            FieldVisibilityManager fieldVisibilityManager
+    ) {
+        this.i18nHelper = i18nHelper;
+        this.applicationProperties = applicationProperties;
+        this.outlookDateManager = outlookDateManager;
+        this.fieldManager = fieldManager;
+        this.fieldLayoutManager = fieldLayoutManager;
+        this.customFieldManager = customFieldManager;
+        this.fieldVisibilityManager = fieldVisibilityManager;
+    }
+
+    /**
+     * Get instance.
+     *
+     * @return
+     */
+    public static FieldCollectionsUtils getInstance() {
+        final FieldCollectionsUtils instance = ComponentManager.getOSGiComponentInstanceOfType(
+                FieldCollectionsUtils.class
+        );
+
+        Assertions.notNull("fieldCollectionsUtils", instance);
+
+        return instance;
+    }
+
     /**
      * @return a complete list of fields, including custom fields.
      */
     public List<Field> getAllFields() {
-        final FieldManager fieldManager = ManagerFactory.getFieldManager();
         Set<Field> allFieldsSet = new TreeSet<Field>(getComparator());
 
         allFieldsSet.addAll(fieldManager.getOrderableFields());
@@ -110,7 +159,6 @@ public class FieldCollectionsUtils {
      * @return a list of fields, including custom fields, which could be modified.
      */
     public List<Field> getAllEditableFields(){
-        final FieldManager fieldManager = ManagerFactory.getFieldManager();
         Set<Field> allFields = new TreeSet<Field>(getComparator());
 
         try {
@@ -142,7 +190,7 @@ public class FieldCollectionsUtils {
     public List<Field> getAllDateFields() {
         List<Field> allDateFields = new ArrayList<Field>();
 
-        List<CustomField> fields = ManagerFactory.getCustomFieldManager().getCustomFieldObjects();
+        List<CustomField> fields = customFieldManager.getCustomFieldObjects();
 
         for (CustomField cfDate : fields) {
             CustomFieldType customFieldType = cfDate.getCustomFieldType();
@@ -160,7 +208,7 @@ public class FieldCollectionsUtils {
             ModelField modelField = modelFields.next();
 
             if(modelField.getType().equals("date-time")){
-                Field fldDate = ManagerFactory.getFieldManager().getField(modelField.getName());
+                Field fldDate = fieldManager.getField(modelField.getName());
                 allDateFields.add(fldDate);
             }
         }
@@ -175,8 +223,6 @@ public class FieldCollectionsUtils {
      * @return if a field is displayed in a screen.
      */
     public boolean isFieldOnScreen(Issue issue, Field field, FieldScreen fieldScreen){
-        final FieldManager fieldManager = ComponentManager.getInstance().getFieldManager();
-
         if (fieldManager.isCustomField(field)) {
             CustomFieldType type = ((CustomField) field).getCustomFieldType();
 
@@ -213,7 +259,6 @@ public class FieldCollectionsUtils {
      * @return if a field is available.
      */
     public boolean isIssueHasField(Issue issue, Field field) {
-        final FieldManager fieldManager = ManagerFactory.getFieldManager();
         final String fieldId = field.getId();
 
         boolean isHidden = false;
@@ -221,11 +266,7 @@ public class FieldCollectionsUtils {
         if (TIME_TRACKING_FIELDS.contains(fieldId)) {
             isHidden = !fieldManager.isTimeTrackingOn();
         } else {
-            FieldVisibilityManager fvManager = ComponentManager.getComponentInstanceOfType(
-                    FieldVisibilityManager.class
-            );
-
-            isHidden = fvManager.isFieldHidden(field.getId(), issue);
+            isHidden = fieldVisibilityManager.isFieldHidden(field.getId(), issue);
         }
 
         if (isHidden) {
@@ -244,10 +285,8 @@ public class FieldCollectionsUtils {
     }
 
     public FieldLayoutItem getFieldLayoutItem(Issue issue, Field field) throws FieldLayoutStorageException {
-        final FieldLayoutManager fieldLayoutManager = ComponentManager.getInstance().getFieldLayoutManager();
-
-        FieldLayout layout = fieldLayoutManager.getFieldLayout(
-                issue.getProjectObject().getGenericValue(),
+                FieldLayout layout = fieldLayoutManager.getFieldLayout(
+                issue.getProjectObject(),
                 issue.getIssueTypeObject().getId()
         );
 
@@ -432,19 +471,19 @@ public class FieldCollectionsUtils {
      *
      * It formats to a date nice.
      */
-    public static String getNiceDate(Timestamp tsDate){
+    public String getNiceDate(Timestamp tsDate){
         Date timePerformed = new Date(tsDate.getTime());
-        I18nHelper i18n = new I18nBean();
-        return ManagerFactory.getOutlookDateManager().getOutlookDate(i18n.getLocale()).formatDMYHMS(timePerformed);
+        Locale defaultLocale = applicationProperties.getDefaultLocale();
+
+        return outlookDateManager.getOutlookDate(defaultLocale).formatDMYHMS(timePerformed);
     }
 
     /**
      * Get comparator for sorting fields.
      * @return
      */
-    private static Comparator<Field> getComparator() {
-        ApplicationProperties ap = new ApplicationPropertiesImpl();
-        I18nBean i18n = new I18nBean(ap.getDefaultLocale().getDisplayName());
+    private Comparator<Field> getComparator() {
+        I18nHelper i18n = i18nHelper.getInstance(applicationProperties.getDefaultLocale());
 
         return new NameComparatorEx(i18n);
     }
@@ -454,8 +493,7 @@ public class FieldCollectionsUtils {
      * @param names
      * @return
      */
-    private static List<Field> asFields(String ... names) {
-        final FieldManager fieldManager = ManagerFactory.getFieldManager();
+    private List<Field> asFields(String ... names) {
         List<Field> result = new ArrayList<Field>(names.length);
 
         for (String name : names) {

@@ -1,7 +1,5 @@
 package com.googlecode.jsu.workflow;
 
-import static com.googlecode.jsu.util.WorkflowFactoryUtils.getFieldByName;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -11,6 +9,7 @@ import com.atlassian.jira.issue.fields.Field;
 import com.atlassian.jira.plugin.workflow.AbstractWorkflowPluginFactory;
 import com.atlassian.jira.plugin.workflow.WorkflowPluginFunctionFactory;
 import com.googlecode.jsu.util.FieldCollectionsUtils;
+import com.googlecode.jsu.util.WorkflowUtils;
 import com.opensymphony.workflow.loader.AbstractDescriptor;
 
 /**
@@ -25,12 +24,16 @@ public class WorkflowClearFieldValueFunctionPluginFactory
     public static final String FIELD_LIST = "fieldList";
 
     private final FieldCollectionsUtils fieldCollectionsUtils;
+    private final WorkflowUtils workflowUtils;
 
     /**
      * @param fieldCollectionsUtils
+     * @param workflowUtils
      */
-    public WorkflowClearFieldValueFunctionPluginFactory(FieldCollectionsUtils fieldCollectionsUtils) {
+    public WorkflowClearFieldValueFunctionPluginFactory(FieldCollectionsUtils fieldCollectionsUtils,
+            WorkflowUtils workflowUtils) {
         this.fieldCollectionsUtils = fieldCollectionsUtils;
+        this.workflowUtils = workflowUtils;
     }
 
     /* (non-Javadoc)
@@ -40,7 +43,7 @@ public class WorkflowClearFieldValueFunctionPluginFactory
     protected void getVelocityParamsForEdit(Map velocityParams, AbstractDescriptor descriptor) {
         this.getVelocityParamsForInput(velocityParams);
 
-        velocityParams.put(SELECTED_FIELD, getFieldByName(descriptor, FIELD));
+        velocityParams.put(SELECTED_FIELD, workflowUtils.getFieldFromDescriptor(descriptor, FIELD));
     }
 
     /* (non-Javadoc)
@@ -58,7 +61,7 @@ public class WorkflowClearFieldValueFunctionPluginFactory
      */
     @SuppressWarnings("unchecked")
     protected void getVelocityParamsForView(Map velocityParams, AbstractDescriptor descriptor) {
-        velocityParams.put(SELECTED_FIELD, getFieldByName(descriptor, FIELD));
+        velocityParams.put(SELECTED_FIELD, workflowUtils.getFieldFromDescriptor(descriptor, FIELD));
     }
 
     /* (non-Javadoc)

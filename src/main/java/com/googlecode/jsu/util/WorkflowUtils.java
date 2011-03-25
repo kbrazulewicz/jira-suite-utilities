@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.ofbiz.core.entity.GenericEntityException;
@@ -18,7 +19,6 @@ import org.slf4j.LoggerFactory;
 
 import com.atlassian.core.user.GroupUtils;
 import com.atlassian.core.user.UserUtils;
-import com.atlassian.jira.ComponentManager;
 import com.atlassian.jira.ManagerFactory;
 import com.atlassian.jira.bc.project.component.ProjectComponent;
 import com.atlassian.jira.bc.project.component.ProjectComponentManager;
@@ -27,6 +27,7 @@ import com.atlassian.jira.config.properties.ApplicationProperties;
 import com.atlassian.jira.issue.Issue;
 import com.atlassian.jira.issue.IssueConstant;
 import com.atlassian.jira.issue.IssueFieldConstants;
+import com.atlassian.jira.issue.IssueManager;
 import com.atlassian.jira.issue.IssueRelationConstants;
 import com.atlassian.jira.issue.ModifiedValue;
 import com.atlassian.jira.issue.MutableIssue;
@@ -43,7 +44,9 @@ import com.atlassian.jira.issue.fields.FieldManager;
 import com.atlassian.jira.issue.fields.layout.field.FieldLayoutItem;
 import com.atlassian.jira.issue.fields.layout.field.FieldLayoutStorageException;
 import com.atlassian.jira.issue.fields.screen.FieldScreen;
+import com.atlassian.jira.issue.link.IssueLinkManager;
 import com.atlassian.jira.issue.resolution.Resolution;
+import com.atlassian.jira.issue.security.IssueSecurityLevelManager;
 import com.atlassian.jira.issue.status.Status;
 import com.atlassian.jira.issue.util.IssueChangeHolder;
 import com.atlassian.jira.issue.worklog.WorkRatio;
@@ -55,7 +58,9 @@ import com.opensymphony.user.Entity;
 import com.opensymphony.user.EntityNotFoundException;
 import com.opensymphony.user.Group;
 import com.opensymphony.user.User;
+import com.opensymphony.workflow.loader.AbstractDescriptor;
 import com.opensymphony.workflow.loader.ActionDescriptor;
+import com.opensymphony.workflow.loader.FunctionDescriptor;
 
 /**
  * @author Gustavo Martin.
@@ -66,17 +71,51 @@ import com.opensymphony.workflow.loader.ActionDescriptor;
 public class WorkflowUtils {
     public static final String SPLITTER = "@@";
 
-    private static final WorkflowActionsBean workflowActionsBean = new WorkflowActionsBean();
+    private static final String CASCADING_SELECT_TYPE = "com.atlassian.jira.plugin.system.customfieldtypes:cascadingselect";
 
-    public static final String CASCADING_SELECT_TYPE = "com.atlassian.jira.plugin.system.customfieldtypes:cascadingselect";
+    private final WorkflowActionsBean workflowActionsBean = new WorkflowActionsBean();
+    private final Logger log = LoggerFactory.getLogger(WorkflowUtils.class);
 
-    private static final Logger log = LoggerFactory.getLogger(WorkflowUtils.class);
+    private final FieldManager fieldManager;
+    private final IssueManager issueManager;
+    private final ProjectComponentManager projectComponentManager;
+    private final VersionManager versionManager;
+    private final IssueSecurityLevelManager issueSecurityLevelManager;
+    private final ApplicationProperties applicationProperties;
+    private final FieldCollectionsUtils fieldCollectionsUtils;
+    private final IssueLinkManager issueLinkManager;
+
+    /**
+     * @param fieldManager
+     * @param issueManager
+     * @param projectComponentManager
+     * @param versionManager
+     * @param issueSecurityLevelManager
+     * @param applicationProperties
+     * @param fieldCollectionsUtils
+     * @param issueLinkManager
+     */
+    public WorkflowUtils(
+            FieldManager fieldManager, IssueManager issueManager,
+            ProjectComponentManager projectComponentManager, VersionManager versionManager,
+            IssueSecurityLevelManager issueSecurityLevelManager, ApplicationProperties applicationProperties,
+            FieldCollectionsUtils fieldCollectionsUtils, IssueLinkManager issueLinkManager
+    ) {
+        this.fieldManager = fieldManager;
+        this.issueManager = issueManager;
+        this.projectComponentManager = projectComponentManager;
+        this.versionManager = versionManager;
+        this.issueSecurityLevelManager = issueSecurityLevelManager;
+        this.applicationProperties = applicationProperties;
+        this.fieldCollectionsUtils = fieldCollectionsUtils;
+        this.issueLinkManager = issueLinkManager;
+    }
 
     /**
      * @param key
      * @return a String with the field name from given key.
      */
-    public static String getFieldNameFromKey(String key) {
+    public String getFieldNameFromKey(String key) {
         return getFieldFromKey(key).getName();
     }
 
@@ -84,8 +123,7 @@ public class WorkflowUtils {
      * @param key
      * @return a Field object from given key. (Field or Custom Field).
      */
-    public static Field getFieldFromKey(String key) {
-        FieldManager fieldManager = ManagerFactory.getFieldManager();
+    public Field getFieldFromKey(String key) {
         Field field;
 
         if (fieldManager.isCustomField(key)) {
@@ -101,6 +139,14 @@ public class WorkflowUtils {
         return field;
     }
 
+    public Field getFieldFromDescriptor(AbstractDescriptor descriptor, String name) {
+        FunctionDescriptor functionDescriptor = (FunctionDescriptor) descriptor;
+        Map args = functionDescriptor.getArgs();
+        String fieldKey = (String) args.get(name);
+
+        return getFieldFromKey(fieldKey);
+    }
+
     /**
      * @param issue
      *            an issue object.
@@ -112,12 +158,11 @@ public class WorkflowUtils {
      * a List, a Strong, or any FildType within JIRA.
      *
      */
-    public static Object getFieldValueFromIssue(Issue issue, Field field) {
-        FieldManager fldManager = ManagerFactory.getFieldManager();
+    public Object getFieldValueFromIssue(Issue issue, Field field) {
         Object retVal = null;
 
         try {
-            if (fldManager.isCustomField(field)) {
+            if (fieldManager.isCustomField(field)) {
                 // Return the CustomField value. It could be any object.
                 CustomField customField = (CustomField) field;
                 Object value = issue.getCustomFieldValue(customField);
@@ -175,7 +220,7 @@ public class WorkflowUtils {
                 } else if (fieldId.equals(IssueFieldConstants.COMMENT)) {
                     // return a list with the comments of a given issue.
                     try {
-                        retCollection = ManagerFactory.getIssueManager().getEntitiesByIssueObject(
+                        retCollection = issueManager.getEntitiesByIssueObject(
                                 IssueRelationConstants.COMMENTS, issue
                         );
 
@@ -204,7 +249,7 @@ public class WorkflowUtils {
                 } else if (fieldId.equals(IssueFieldConstants.TIMETRACKING)) {
                     // Not implemented, yet.
                 } else if (fieldId.equals(IssueFieldConstants.ISSUE_LINKS)) {
-                    retVal = ComponentManager.getInstance().getIssueLinkManager().getIssueLinks(issue.getId());
+                    retVal = issueLinkManager.getIssueLinks(issue.getId());
                 } else if (fieldId.equals(IssueFieldConstants.WORKRATIO)) {
                     retVal = String.valueOf(WorkRatio.getWorkRatio(issue));
                 } else if (fieldId.equals(IssueFieldConstants.ISSUE_KEY)) {
@@ -230,9 +275,9 @@ public class WorkflowUtils {
                 } else if (fieldId.equals(IssueFieldConstants.TIME_SPENT)) {
                     retVal = issue.getTimeSpent();
                 } else if (fieldId.equals(IssueFieldConstants.ASSIGNEE)) {
-                    retVal = issue.getAssignee();
+                    retVal = issue.getAssigneeUser();
                 } else if (fieldId.equals(IssueFieldConstants.REPORTER)) {
-                    retVal = issue.getReporter();
+                    retVal = issue.getReporterUser();
                 } else if (fieldId.equals(IssueFieldConstants.DESCRIPTION)) {
                     retVal = issue.getDescription();
                 } else if (fieldId.equals(IssueFieldConstants.ENVIRONMENT)) {
@@ -273,10 +318,8 @@ public class WorkflowUtils {
      * @param field
      * @param value
      */
-    public static void setFieldValue(MutableIssue issue, Field field, Object value, IssueChangeHolder changeHolder) {
-        FieldManager fldManager = ManagerFactory.getFieldManager();
-
-        if (fldManager.isCustomField(field)) {
+    public void setFieldValue(MutableIssue issue, Field field, Object value, IssueChangeHolder changeHolder) {
+        if (fieldManager.isCustomField(field)) {
             CustomField customField = (CustomField) field;
             Object oldValue = issue.getCustomFieldValue(customField);
             FieldLayoutItem fieldLayoutItem;
@@ -297,7 +340,7 @@ public class WorkflowUtils {
             }
 
             try {
-                fieldLayoutItem = CommonPluginUtils.getFieldLayoutItem(issue, field);
+                fieldLayoutItem = FieldCollectionsUtils.getInstance().getFieldLayoutItem(issue, field);
             } catch (FieldLayoutStorageException e) {
                 log.error("Unable to get field layout item", e);
 
@@ -389,7 +432,6 @@ public class WorkflowUtils {
                 if (value == null) {
                     issue.setAffectedVersions(Collections.<Version>emptySet());
                 } else if (value instanceof String) {
-                    VersionManager versionManager = ComponentManager.getInstance().getVersionManager();
                     Version v = versionManager.getVersion(issue.getProjectObject().getId(), (String) value);
 
                     if (v != null) {
@@ -422,8 +464,7 @@ public class WorkflowUtils {
                 if (value == null) {
                     issue.setComponents(Collections.<GenericValue>emptySet());
                 } else if (value instanceof String) {
-                    ProjectComponentManager componentManager = ComponentManager.getInstance().getProjectComponentManager();
-                    ProjectComponent v = componentManager.findByComponentName(
+                    ProjectComponent v = projectComponentManager.findByComponentName(
                             issue.getProjectObject().getId(), (String) value
                     );
 
@@ -441,7 +482,6 @@ public class WorkflowUtils {
                 if (value == null) {
                     issue.setFixVersions(Collections.<Version>emptySet());
                 } else if (value instanceof String) {
-                    VersionManager versionManager = ComponentManager.getInstance().getVersionManager();
                     Version v = versionManager.getVersion(issue.getProjectObject().getId(), (String) value);
 
                     if (v != null) {
@@ -558,7 +598,7 @@ public class WorkflowUtils {
                     Collection<GenericValue> levels;
 
                     try {
-                        levels = ManagerFactory.getIssueSecurityLevelManager().getSecurityLevelsByName((String) value);
+                        levels = issueSecurityLevelManager.getSecurityLevelsByName((String) value);
                     } catch (GenericEntityException e) {
                         throw new IllegalArgumentException("Unable to find security level \"" + value + "\"");
                     }
@@ -599,9 +639,8 @@ public class WorkflowUtils {
                 if (value instanceof Timestamp) {
                     issue.setDueDate((Timestamp) value);
                 } else if (value instanceof String) {
-                    ApplicationProperties properties = ManagerFactory.getApplicationProperties();
                     SimpleDateFormat formatter = new SimpleDateFormat(
-                            properties.getDefaultString(APKeys.JIRA_DATE_TIME_PICKER_JAVA_FORMAT)
+                            applicationProperties.getDefaultString(APKeys.JIRA_DATE_TIME_PICKER_JAVA_FORMAT)
                     );
 
                     try {
@@ -666,11 +705,11 @@ public class WorkflowUtils {
      * @param value
      *            Value for setting
      */
-    public static void setFieldValue(
+    public void setFieldValue(
             MutableIssue issue, String fieldKey, Object value,
             IssueChangeHolder changeHolder
     ) {
-        final Field field = (Field) WorkflowUtils.getFieldFromKey(fieldKey);
+        final Field field = getFieldFromKey(fieldKey);
 
         setFieldValue(issue, field, value, changeHolder);
     }
@@ -683,7 +722,7 @@ public class WorkflowUtils {
      * Get Groups from a string.
      *
      */
-    public static List<Group> getGroups(String strGroups, String splitter) {
+    public List<Group> getGroups(String strGroups, String splitter) {
         String[] groups = strGroups.split("\\Q" + splitter + "\\E");
         List<Group> groupList = new ArrayList<Group>(groups.length);
 
@@ -704,7 +743,7 @@ public class WorkflowUtils {
      * Get Groups as String.
      *
      */
-    public static String getStringGroup(Collection<Group> groups, String splitter) {
+    public String getStringGroup(Collection<Group> groups, String splitter) {
         StringBuilder sb = new StringBuilder();
 
         for (Group g : groups) {
@@ -722,19 +761,19 @@ public class WorkflowUtils {
      * Get Fields from a string.
      *
      */
-    public static List<Field> getFields(String strFields, String splitter) {
+    public List<Field> getFields(String strFields, String splitter) {
         String[] fields = strFields.split("\\Q" + splitter + "\\E");
         List<Field> fieldList = new ArrayList<Field>(fields.length);
 
         for (String s : fields) {
-            final Field field = ManagerFactory.getFieldManager().getField(s);
+            final Field field = fieldManager.getField(s);
 
             if (field != null) {
                 fieldList.add(field);
             }
         }
 
-        return CommonPluginUtils.sortFields(fieldList);
+        return fieldCollectionsUtils.sortFields(fieldList);
     }
 
     /**
@@ -745,7 +784,7 @@ public class WorkflowUtils {
      * Get Fields as String.
      *
      */
-    public static String getStringField(Collection<Field> fields, String splitter) {
+    public String getStringField(Collection<Field> fields, String splitter) {
         StringBuilder sb = new StringBuilder();
 
         for (Field f : fields) {
@@ -763,7 +802,7 @@ public class WorkflowUtils {
      * It obtains the fieldscreen for a transition, if it have one.
      *
      */
-    public static FieldScreen getFieldScreen(ActionDescriptor actionDescriptor) {
+    public FieldScreen getFieldScreen(ActionDescriptor actionDescriptor) {
         return workflowActionsBean.getFieldScreenForView(actionDescriptor);
     }
 }

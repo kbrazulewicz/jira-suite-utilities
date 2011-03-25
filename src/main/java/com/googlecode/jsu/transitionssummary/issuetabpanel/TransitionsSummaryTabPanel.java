@@ -1,6 +1,7 @@
 package com.googlecode.jsu.transitionssummary.issuetabpanel;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import com.atlassian.jira.issue.Issue;
@@ -11,7 +12,6 @@ import com.atlassian.jira.plugin.issuetabpanel.IssueTabPanelModuleDescriptor;
 import com.googlecode.jsu.transitionssummary.TransitionSummary;
 import com.googlecode.jsu.transitionssummary.TransitionsManager;
 import com.opensymphony.user.User;
-import java.util.Collections;
 
 /**
  * @author Gustavo Martin
@@ -22,6 +22,15 @@ import java.util.Collections;
 public class TransitionsSummaryTabPanel implements IssueTabPanel {
 
     protected IssueTabPanelModuleDescriptor descriptor;
+
+    private final TransitionsManager transitionsManager;
+
+    /**
+     * @param transitionsManager
+     */
+    public TransitionsSummaryTabPanel(TransitionsManager transitionsManager) {
+        this.transitionsManager = transitionsManager;
+    }
 
     /* (non-Javadoc)
      * @see com.googlecode.jsu.issuetabpanel.IssueTabPanel#init(com.googlecode.jsu.issuetabpanel.IssueTabPanelModuleDescriptor)
@@ -35,7 +44,7 @@ public class TransitionsSummaryTabPanel implements IssueTabPanel {
      */
     public List getActions(Issue issue, User remoteUser) {
         List<IssueAction> retList = new ArrayList<IssueAction>();
-        List<TransitionSummary> transitions = TransitionsManager.getTransitionSummary(issue);
+        List<TransitionSummary> transitions = transitionsManager.getTransitionSummary(issue);
 
         // Allway adds only one record to the tab. This is thus, because if there are transition sumeries,
         // it exposes the List with all Transition Summaries. Then, velocity will be in charge of render it properly.

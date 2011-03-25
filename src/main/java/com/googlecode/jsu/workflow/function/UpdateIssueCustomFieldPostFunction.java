@@ -21,6 +21,15 @@ import com.opensymphony.workflow.WorkflowException;
  *
  */
 public class UpdateIssueCustomFieldPostFunction extends AbstractPreserveChangesPostFunction {
+    private final WorkflowUtils workflowUtils;
+
+    /**
+     * @param workflowUtils
+     */
+    public UpdateIssueCustomFieldPostFunction(WorkflowUtils workflowUtils) {
+        this.workflowUtils = workflowUtils;
+    }
+
     /* (non-Javadoc)
      * @see com.googlecode.jsu.workflow.function.AbstractPreserveChangesPostFunction#executeFunction(java.util.Map, java.util.Map, com.opensymphony.module.propertyset.PropertySet, com.atlassian.jira.issue.util.IssueChangeHolder)
      */
@@ -31,7 +40,7 @@ public class UpdateIssueCustomFieldPostFunction extends AbstractPreserveChangesP
     ) throws WorkflowException {
         String fieldKey = (String) args.get(TARGET_FIELD_NAME);
 
-        final Field field = (Field) WorkflowUtils.getFieldFromKey(fieldKey);
+        final Field field = workflowUtils.getFieldFromKey(fieldKey);
         final String fieldName = (field != null) ? field.getName() : "null";
 
         String fieldValue = (String) args.get(TARGET_FIELD_VALUE);
@@ -64,7 +73,7 @@ public class UpdateIssueCustomFieldPostFunction extends AbstractPreserveChangesP
                 ));
             }
 
-            WorkflowUtils.setFieldValue(issue, fieldKey, fieldValue, holder);
+            workflowUtils.setFieldValue(issue, fieldKey, fieldValue, holder);
         } catch (Exception e) {
             final String message = String.format(
                     "Unable to update custom field '%s - %s' in issue [%s]",

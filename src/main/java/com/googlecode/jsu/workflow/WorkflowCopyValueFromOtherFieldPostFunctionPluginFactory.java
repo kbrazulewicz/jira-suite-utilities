@@ -1,7 +1,5 @@
 package com.googlecode.jsu.workflow;
 
-import static com.googlecode.jsu.util.WorkflowFactoryUtils.getFieldByName;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -11,6 +9,7 @@ import com.atlassian.jira.issue.fields.Field;
 import com.atlassian.jira.plugin.workflow.AbstractWorkflowPluginFactory;
 import com.atlassian.jira.plugin.workflow.WorkflowPluginFunctionFactory;
 import com.googlecode.jsu.util.FieldCollectionsUtils;
+import com.googlecode.jsu.util.WorkflowUtils;
 import com.opensymphony.workflow.loader.AbstractDescriptor;
 
 /**
@@ -20,12 +19,18 @@ import com.opensymphony.workflow.loader.AbstractDescriptor;
  */
 public class WorkflowCopyValueFromOtherFieldPostFunctionPluginFactory extends AbstractWorkflowPluginFactory implements WorkflowPluginFunctionFactory {
     private final FieldCollectionsUtils fieldCollectionsUtils;
+    private final WorkflowUtils workflowUtils;
 
     /**
      * @param fieldCollectionsUtils
+     * @param workflowUtils
      */
-    public WorkflowCopyValueFromOtherFieldPostFunctionPluginFactory(FieldCollectionsUtils fieldCollectionsUtils) {
+    public WorkflowCopyValueFromOtherFieldPostFunctionPluginFactory(
+            FieldCollectionsUtils fieldCollectionsUtils,
+            WorkflowUtils workflowUtils
+    ) {
         this.fieldCollectionsUtils = fieldCollectionsUtils;
+        this.workflowUtils = workflowUtils;
     }
 
     /* (non-Javadoc)
@@ -45,8 +50,8 @@ public class WorkflowCopyValueFromOtherFieldPostFunctionPluginFactory extends Ab
     protected void getVelocityParamsForEdit(Map<String, Object> velocityParams, AbstractDescriptor descriptor) {
         getVelocityParamsForInput(velocityParams);
 
-        Field sourceFieldId = getFieldByName(descriptor, "sourceField");
-        Field destinationField = getFieldByName(descriptor, "destinationField");
+        Field sourceFieldId = workflowUtils.getFieldFromDescriptor(descriptor, "sourceField");
+        Field destinationField = workflowUtils.getFieldFromDescriptor(descriptor, "destinationField");
 
         velocityParams.put("val-sourceFieldSelected", sourceFieldId);
         velocityParams.put("val-destinationFieldSelected", destinationField);
@@ -56,8 +61,8 @@ public class WorkflowCopyValueFromOtherFieldPostFunctionPluginFactory extends Ab
      * @see com.googlecode.jsu.workflow.AbstractWorkflowPluginFactory#getVelocityParamsForView(java.util.Map, com.opensymphony.workflow.loader.AbstractDescriptor)
      */
     protected void getVelocityParamsForView(Map<String, Object> velocityParams, AbstractDescriptor descriptor) {
-        Field sourceFieldId = getFieldByName(descriptor, "sourceField");
-        Field destinationField = getFieldByName(descriptor, "destinationField");
+        Field sourceFieldId = workflowUtils.getFieldFromDescriptor(descriptor, "sourceField");
+        Field destinationField = workflowUtils.getFieldFromDescriptor(descriptor, "destinationField");
 
         velocityParams.put("val-sourceFieldSelected", sourceFieldId);
         velocityParams.put("val-destinationFieldSelected", destinationField);

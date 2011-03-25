@@ -16,6 +16,15 @@ import com.opensymphony.workflow.WorkflowException;
  * @author Alexey Abashev
  */
 public class ClearFieldValuePostFunction extends AbstractPreserveChangesPostFunction {
+    private final WorkflowUtils workflowUtils;
+
+    /**
+     * @param workflowUtils
+     */
+    public ClearFieldValuePostFunction(WorkflowUtils workflowUtils) {
+        this.workflowUtils = workflowUtils;
+    }
+
     /* (non-Javadoc)
      * @see com.googlecode.jsu.workflow.function.AbstractPreserveChangesPostFunction#executeFunction(java.util.Map, java.util.Map, com.opensymphony.module.propertyset.PropertySet, com.atlassian.jira.issue.util.IssueChangeHolder)
      */
@@ -25,7 +34,7 @@ public class ClearFieldValuePostFunction extends AbstractPreserveChangesPostFunc
             PropertySet ps, IssueChangeHolder holder
     ) throws WorkflowException {
         String fieldKey = (String) args.get(WorkflowClearFieldValueFunctionPluginFactory.FIELD);
-        Field field = (Field) WorkflowUtils.getFieldFromKey(fieldKey);
+        Field field = workflowUtils.getFieldFromKey(fieldKey);
 
         final String fieldName = (field != null) ? field.getName() : "null";
 
@@ -40,7 +49,7 @@ public class ClearFieldValuePostFunction extends AbstractPreserveChangesPostFunc
                 ));
             }
 
-            WorkflowUtils.setFieldValue(issue, fieldKey, null, holder);
+            workflowUtils.setFieldValue(issue, fieldKey, null, holder);
         } catch (Exception e) {
             String message = "Unable to clean field - '" + fieldKey + " - " + fieldName + "'";
 

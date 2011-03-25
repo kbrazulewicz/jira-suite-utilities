@@ -21,22 +21,31 @@ public class WorkflowUserIsInCustomFieldConditionPluginFactory
     private static final String ALLOW_USER_IN_FIELD = "allowUserInField";
 
     private final CustomFieldManager customFieldManager;
+    private final WorkflowUtils workflowUtils;
 
-    public WorkflowUserIsInCustomFieldConditionPluginFactory(CustomFieldManager customFieldManager) {
+    /**
+     * @param customFieldManager
+     * @param workflowUtils
+     */
+    public WorkflowUserIsInCustomFieldConditionPluginFactory(
+            CustomFieldManager customFieldManager,
+            WorkflowUtils workflowUtils
+    ) {
         this.customFieldManager = customFieldManager;
+        this.workflowUtils = workflowUtils;
     }
 
     /* (non-Javadoc)
      * @see com.googlecode.jsu.workflow.AbstractWorkflowPluginFactory#getVelocityParamsForInput(java.util.Map)
      */
-    protected void getVelocityParamsForInput(Map velocityParams) {
+    protected void getVelocityParamsForInput(Map<String, Object> velocityParams) {
         velocityParams.put("val-fieldsList", customFieldManager.getCustomFieldObjects());
     }
 
     /* (non-Javadoc)
      * @see com.googlecode.jsu.workflow.AbstractWorkflowPluginFactory#getVelocityParamsForEdit(java.util.Map, com.opensymphony.workflow.loader.AbstractDescriptor)
      */
-    protected void getVelocityParamsForEdit(Map velocityParams, AbstractDescriptor descriptor) {
+    protected void getVelocityParamsForEdit(Map<String, Object> velocityParams, AbstractDescriptor descriptor) {
         getVelocityParamsForInput(velocityParams);
 
         ConditionDescriptor conditionDescriptor = (ConditionDescriptor) descriptor;
@@ -47,7 +56,7 @@ public class WorkflowUserIsInCustomFieldConditionPluginFactory
         Field field = null;
 
         try {
-            field = WorkflowUtils.getFieldFromKey(sField);
+            field = workflowUtils.getFieldFromKey(sField);
         } catch (Exception e) {
         }
 
@@ -63,7 +72,7 @@ public class WorkflowUserIsInCustomFieldConditionPluginFactory
     /* (non-Javadoc)
      * @see com.googlecode.jsu.workflow.AbstractWorkflowPluginFactory#getVelocityParamsForView(java.util.Map, com.opensymphony.workflow.loader.AbstractDescriptor)
      */
-    protected void getVelocityParamsForView(Map velocityParams, AbstractDescriptor descriptor) {
+    protected void getVelocityParamsForView(Map<String, Object> velocityParams, AbstractDescriptor descriptor) {
         ConditionDescriptor conditionDescriptor = (ConditionDescriptor) descriptor;
         Map args = conditionDescriptor.getArgs();
 
@@ -72,7 +81,7 @@ public class WorkflowUserIsInCustomFieldConditionPluginFactory
         Field field = null;
 
         try {
-            field = WorkflowUtils.getFieldFromKey(sField);
+            field = workflowUtils.getFieldFromKey(sField);
         } catch (Exception e) {
         }
 
@@ -90,8 +99,8 @@ public class WorkflowUserIsInCustomFieldConditionPluginFactory
     /* (non-Javadoc)
      * @see com.googlecode.jsu.workflow.WorkflowPluginFactory#getDescriptorParams(java.util.Map)
      */
-    public Map getDescriptorParams(Map conditionParams) {
-        Map params = new HashMap();
+    public Map<String, ?> getDescriptorParams(Map<String, Object> conditionParams) {
+        Map<String, Object> params = new HashMap<String, Object>();
 
         try {
             String field = extractSingleParam(conditionParams, "fieldsList");
@@ -112,7 +121,7 @@ public class WorkflowUserIsInCustomFieldConditionPluginFactory
      *
      * @return
      */
-    public static boolean getAllowUserInField(Map args) {
+    public static boolean getAllowUserInField(Map<String, Object> args) {
         String param = (String) args.get(ALLOW_USER_IN_FIELD);
 
         if (param == null) {

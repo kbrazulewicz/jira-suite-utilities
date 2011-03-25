@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.atlassian.jira.issue.status.Status;
-import com.googlecode.jsu.util.CommonPluginUtils;
+import com.googlecode.jsu.util.FieldCollectionsUtils;
 
 /**
  * @author Gustavo Martin
@@ -25,12 +25,19 @@ public class TransitionSummary {
     private Timestamp lastUpdate;
     private List<Transition> transitions = new ArrayList<Transition>();
 
+    private final FieldCollectionsUtils fieldCollectionsUtils;
+
     /**
      * @param id an external ID generate.
      * @param fromStatus
      * @param toStatus
      */
-    public TransitionSummary(String id, Status fromStatus, Status toStatus){
+    public TransitionSummary(
+            FieldCollectionsUtils fieldCollectionsUtils,
+            String id, Status fromStatus, Status toStatus
+    ) {
+        this.fieldCollectionsUtils = fieldCollectionsUtils;
+
         setId(id);
         setFromStatus(fromStatus);
         setToStatus(toStatus);
@@ -109,7 +116,7 @@ public class TransitionSummary {
      * @return a nice formatted date as String.
      */
     public String getLastUpdateAsString(){
-        return CommonPluginUtils.getNiceDate(lastUpdate);
+        return fieldCollectionsUtils.getNiceDate(lastUpdate);
     }
 
     /**

@@ -38,9 +38,10 @@ public class FieldsRequiredValidator extends GenericValidator {
      */
     public FieldsRequiredValidator(
             ConditionCheckerFactory conditionCheckerFactory,
-            FieldCollectionsUtils fieldCollectionsUtils
+            FieldCollectionsUtils fieldCollectionsUtils,
+            WorkflowUtils workflowUtils
     ) {
-        super(fieldCollectionsUtils);
+        super(fieldCollectionsUtils, workflowUtils);
 
         this.conditionCheckerFactory = conditionCheckerFactory;
     }
@@ -52,7 +53,7 @@ public class FieldsRequiredValidator extends GenericValidator {
         final ConditionChecker checker = conditionCheckerFactory.getChecker(STRING, EQUAL);
 
         // It obtains the fields that are required for the transition.
-        Collection<Field> fieldsSelected = WorkflowUtils.getFields(fieldList, WorkflowUtils.SPLITTER);
+        Collection<Field> fieldsSelected = workflowUtils.getFields(fieldList, WorkflowUtils.SPLITTER);
         final Issue issue = getIssue();
         String issueKey = issue.getKey();
 
@@ -66,7 +67,7 @@ public class FieldsRequiredValidator extends GenericValidator {
 
         for (Field field : fieldsSelected) {
             if (fieldCollectionsUtils.isIssueHasField(issue, field)) {
-                Object fieldValue = WorkflowUtils.getFieldValueFromIssue(issue, field);
+                Object fieldValue = workflowUtils.getFieldValueFromIssue(issue, field);
 
                 if (log.isDebugEnabled()) {
                     log.debug(

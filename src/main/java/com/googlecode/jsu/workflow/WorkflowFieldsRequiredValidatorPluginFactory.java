@@ -25,12 +25,18 @@ public class WorkflowFieldsRequiredValidatorPluginFactory
     public static final String SELECTED_FIELDS = "hidFieldsList";
 
     private final FieldCollectionsUtils fieldCollectionsUtils;
+    private final WorkflowUtils workflowUtils;
 
     /**
      * @param fieldCollectionsUtils
+     * @param workflowUtils
      */
-    public WorkflowFieldsRequiredValidatorPluginFactory(FieldCollectionsUtils fieldCollectionsUtils) {
+    public WorkflowFieldsRequiredValidatorPluginFactory(
+            FieldCollectionsUtils fieldCollectionsUtils,
+            WorkflowUtils workflowUtils
+    ) {
         this.fieldCollectionsUtils = fieldCollectionsUtils;
+        this.workflowUtils = workflowUtils;
     }
 
     /* (non-Javadoc)
@@ -62,7 +68,7 @@ public class WorkflowFieldsRequiredValidatorPluginFactory
         allFields.removeAll(fieldsSelected);
 
         velocityParams.put("val-fieldsListSelected", fieldsSelected);
-        velocityParams.put("val-hidFieldsList", WorkflowUtils.getStringField(fieldsSelected, WorkflowUtils.SPLITTER));
+        velocityParams.put("val-hidFieldsList", workflowUtils.getStringField(fieldsSelected, WorkflowUtils.SPLITTER));
         velocityParams.put("val-fieldsList", allFields);
     }
 
@@ -100,9 +106,9 @@ public class WorkflowFieldsRequiredValidatorPluginFactory
      * @param args
      * @return
      */
-    public static Collection<Field> getSelectedFields(Map<String, Object> args) {
+    public Collection<Field> getSelectedFields(Map<String, Object> args) {
         String strFieldsSelected = (String) args.get(SELECTED_FIELDS);
 
-        return WorkflowUtils.getFields(strFieldsSelected, WorkflowUtils.SPLITTER);
+        return workflowUtils.getFields(strFieldsSelected, WorkflowUtils.SPLITTER);
     }
 }

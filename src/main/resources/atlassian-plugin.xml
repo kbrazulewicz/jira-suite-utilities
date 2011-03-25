@@ -221,4 +221,19 @@
 
         <description>This utils class exposes common methods to get field collections</description>
     </component>
+
+    <component key="transitionsManager"
+               class="com.googlecode.jsu.transitionssummary.TransitionsManager"
+               interface="com.googlecode.jsu.transitionssummary.TransitionsManager" public="true">
+
+        <description>Generate statistics information about transitions.</description>
+    </component>
+
+    <component key="workflowUtils"
+               class="com.googlecode.jsu.util.WorkflowUtils"
+               interface="com.googlecode.jsu.util.WorkflowUtils" public="true">
+
+        <description>Workflow utils</description>
+    </component>
+
 </atlassian-plugin>

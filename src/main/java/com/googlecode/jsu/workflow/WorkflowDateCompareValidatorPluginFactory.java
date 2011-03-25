@@ -30,17 +30,18 @@ public class WorkflowDateCompareValidatorPluginFactory extends
 
     private final ConditionCheckerFactory conditionCheckerFactory;
     private final FieldCollectionsUtils fieldCollectionsUtils;
+    private final WorkflowUtils workflowUtils;
 
     /**
      * @param conditionCheckerFactory
      * @param fieldCollectionsUtils
+     * @param workflowUtils
      */
-    public WorkflowDateCompareValidatorPluginFactory(
-            ConditionCheckerFactory conditionCheckerFactory,
-            FieldCollectionsUtils fieldCollectionsUtils
-    ) {
+    public WorkflowDateCompareValidatorPluginFactory(ConditionCheckerFactory conditionCheckerFactory,
+            FieldCollectionsUtils fieldCollectionsUtils, WorkflowUtils workflowUtils) {
         this.conditionCheckerFactory = conditionCheckerFactory;
         this.fieldCollectionsUtils = fieldCollectionsUtils;
+        this.workflowUtils = workflowUtils;
     }
 
     /* (non-Javadoc)
@@ -77,8 +78,8 @@ public class WorkflowDateCompareValidatorPluginFactory extends
         ConditionType condition = conditionCheckerFactory.findConditionById(conditionId);
         YesNoType ynTime = (Integer.parseInt(includeTime) == 1) ? YES : NO;
 
-        velocityParams.put("val-date1Selected", WorkflowUtils.getFieldFromKey(date1));
-        velocityParams.put("val-date2Selected", WorkflowUtils.getFieldFromKey(date2));
+        velocityParams.put("val-date1Selected", workflowUtils.getFieldFromKey(date1));
+        velocityParams.put("val-date2Selected", workflowUtils.getFieldFromKey(date2));
         velocityParams.put("val-conditionSelected", condition);
         velocityParams.put("val-includeTimeSelected", ynTime);
     }
@@ -101,8 +102,8 @@ public class WorkflowDateCompareValidatorPluginFactory extends
         ConditionType condition = conditionCheckerFactory.findConditionById(conditionId);
         YesNoType ynTime = (Integer.parseInt(includeTime) == 1) ? YES : NO;
 
-        velocityParams.put("val-date1Selected", WorkflowUtils.getFieldFromKey(date1));
-        velocityParams.put("val-date2Selected", WorkflowUtils.getFieldFromKey(date2));
+        velocityParams.put("val-date1Selected", workflowUtils.getFieldFromKey(date1));
+        velocityParams.put("val-date2Selected", workflowUtils.getFieldFromKey(date2));
         velocityParams.put("val-conditionSelected", condition);
         velocityParams.put("val-includeTimeSelected", ynTime);
     }

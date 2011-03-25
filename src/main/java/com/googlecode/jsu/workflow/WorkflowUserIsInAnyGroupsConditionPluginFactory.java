@@ -1,7 +1,6 @@
 package com.googlecode.jsu.workflow;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -19,23 +18,32 @@ import com.opensymphony.workflow.loader.ConditionDescriptor;
  *
  */
 public class WorkflowUserIsInAnyGroupsConditionPluginFactory extends
-AbstractWorkflowPluginFactory implements WorkflowPluginConditionFactory {
+        AbstractWorkflowPluginFactory implements WorkflowPluginConditionFactory {
+
+    private final WorkflowUtils workflowUtils;
+
+    /**
+     * @param workflowUtils
+     */
+    public WorkflowUserIsInAnyGroupsConditionPluginFactory(WorkflowUtils workflowUtils) {
+        this.workflowUtils = workflowUtils;
+    }
 
     /* (non-Javadoc)
      * @see com.googlecode.jsu.workflow.AbstractWorkflowPluginFactory#getVelocityParamsForInput(java.util.Map)
      */
-    protected void getVelocityParamsForInput(Map velocityParams) {
-        Collection groups = GroupUtils.getGroups();
-
-        velocityParams.put("val-groupsList", Collections.unmodifiableCollection(groups));
+    protected void getVelocityParamsForInput(Map<String, Object> velocityParams) {
+        velocityParams.put("val-groupsList", GroupUtils.getGroups());
         velocityParams.put("val-splitter", WorkflowUtils.SPLITTER);
     }
 
     /* (non-Javadoc)
      * @see com.googlecode.jsu.workflow.AbstractWorkflowPluginFactory#getVelocityParamsForEdit(java.util.Map, com.opensymphony.workflow.loader.AbstractDescriptor)
      */
-    protected void getVelocityParamsForEdit(Map velocityParams,
-            AbstractDescriptor descriptor) {
+    protected void getVelocityParamsForEdit(
+            Map<String, Object> velocityParams,
+            AbstractDescriptor descriptor
+    ) {
 
         getVelocityParamsForInput(velocityParams);
 
@@ -45,44 +53,44 @@ AbstractWorkflowPluginFactory implements WorkflowPluginConditionFactory {
         velocityParams.remove("val-groupsList");
 
         String strGroupsSelected = (String)args.get("hidGroupsList");
-        Collection groupsSelected = WorkflowUtils.getGroups(strGroupsSelected, WorkflowUtils.SPLITTER);
+        Collection groupsSelected = workflowUtils.getGroups(strGroupsSelected, WorkflowUtils.SPLITTER);
 
         Collection groups = GroupUtils.getGroups();
         groups.removeAll(groupsSelected);
 
-        velocityParams.put("val-groupsListSelected", Collections.unmodifiableCollection(groupsSelected));
-        velocityParams.put("val-hidGroupsList", WorkflowUtils.getStringGroup(groupsSelected, WorkflowUtils.SPLITTER));
-        velocityParams.put("val-groupsList", Collections.unmodifiableCollection(groups));
+        velocityParams.put("val-groupsListSelected", groupsSelected);
+        velocityParams.put("val-hidGroupsList", workflowUtils.getStringGroup(groupsSelected, WorkflowUtils.SPLITTER));
+        velocityParams.put("val-groupsList", groups);
 
     }
 
     /* (non-Javadoc)
      * @see com.googlecode.jsu.workflow.AbstractWorkflowPluginFactory#getVelocityParamsForView(java.util.Map, com.opensymphony.workflow.loader.AbstractDescriptor)
      */
-    protected void getVelocityParamsForView(Map velocityParams,
-            AbstractDescriptor descriptor) {
-
+    protected void getVelocityParamsForView(
+            Map<String, Object> velocityParams,
+            AbstractDescriptor descriptor
+    ) {
         ConditionDescriptor conditionDescriptor = (ConditionDescriptor) descriptor;
         Map args = conditionDescriptor.getArgs();
 
         String strGroupsSelected = (String)args.get("hidGroupsList");
-        Collection groupsSelected = WorkflowUtils.getGroups(strGroupsSelected, WorkflowUtils.SPLITTER);
+        Collection groupsSelected = workflowUtils.getGroups(strGroupsSelected, WorkflowUtils.SPLITTER);
 
-        velocityParams.put("val-groupsListSelected", Collections.unmodifiableCollection(groupsSelected));
-
+        velocityParams.put("val-groupsListSelected", groupsSelected);
     }
 
     /* (non-Javadoc)
      * @see com.googlecode.jsu.workflow.WorkflowPluginFactory#getDescriptorParams(java.util.Map)
      */
-    public Map getDescriptorParams(Map conditionParams) {
-        Map params = new HashMap();
+    public Map<String, ?> getDescriptorParams(Map<String, Object> conditionParams) {
+        Map<String, Object> params = new HashMap<String, Object>();
 
-        try{
+        try {
             String strGroupsSelected = extractSingleParam(conditionParams, "hidGroupsList");
-            params.put("hidGroupsList", strGroupsSelected);
 
-        }catch(IllegalArgumentException iae){
+            params.put("hidGroupsList", strGroupsSelected);
+        } catch(IllegalArgumentException iae) {
             // Aggregate so that Transitions can be added.
         }
 

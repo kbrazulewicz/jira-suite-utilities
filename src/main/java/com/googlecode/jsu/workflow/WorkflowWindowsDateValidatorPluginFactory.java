@@ -22,12 +22,18 @@ public class WorkflowWindowsDateValidatorPluginFactory extends
         AbstractWorkflowPluginFactory implements WorkflowPluginValidatorFactory {
 
     private final FieldCollectionsUtils fieldCollectionsUtils;
+    private final WorkflowUtils workflowUtils;
 
     /**
      * @param fieldCollectionsUtils
+     * @param workflowUtils
      */
-    public WorkflowWindowsDateValidatorPluginFactory(FieldCollectionsUtils fieldCollectionsUtils) {
+    public WorkflowWindowsDateValidatorPluginFactory(
+            FieldCollectionsUtils fieldCollectionsUtils,
+            WorkflowUtils workflowUtils
+    ) {
         this.fieldCollectionsUtils = fieldCollectionsUtils;
+        this.workflowUtils = workflowUtils;
     }
 
     /* (non-Javadoc)
@@ -56,8 +62,8 @@ public class WorkflowWindowsDateValidatorPluginFactory extends
         String date2 = (String) args.get("date2Selected");
         String windowsDays = (String) args.get("windowsDays");
 
-        velocityParams.put("val-date1Selected", WorkflowUtils.getFieldFromKey(date1));
-        velocityParams.put("val-date2Selected", WorkflowUtils.getFieldFromKey(date2));
+        velocityParams.put("val-date1Selected", workflowUtils.getFieldFromKey(date1));
+        velocityParams.put("val-date2Selected", workflowUtils.getFieldFromKey(date2));
         velocityParams.put("val-windowsDays", windowsDays);
 
     }
@@ -76,8 +82,8 @@ public class WorkflowWindowsDateValidatorPluginFactory extends
         String date2 = (String) args.get("date2Selected");
         String windowsDays = (String) args.get("windowsDays");
 
-        velocityParams.put("val-date1Selected", WorkflowUtils.getFieldFromKey(date1));
-        velocityParams.put("val-date2Selected", WorkflowUtils.getFieldFromKey(date2));
+        velocityParams.put("val-date1Selected", workflowUtils.getFieldFromKey(date1));
+        velocityParams.put("val-date2Selected", workflowUtils.getFieldFromKey(date2));
         velocityParams.put("val-windowsDays", windowsDays);
 
     }

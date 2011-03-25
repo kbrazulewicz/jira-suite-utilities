@@ -17,6 +17,7 @@ import com.atlassian.core.util.map.EasyMap;
 import com.atlassian.jira.issue.Issue;
 import com.atlassian.jira.ofbiz.DefaultOfBizDelegator;
 import com.atlassian.jira.ofbiz.OfBizDelegator;
+import com.googlecode.jsu.util.FieldCollectionsUtils;
 
 /**
  * @author Gustavo Martin
@@ -27,13 +28,22 @@ import com.atlassian.jira.ofbiz.OfBizDelegator;
 public class TransitionsManager {
     private static final Logger log = LoggerFactory.getLogger(TransitionsManager.class);
 
+    private final FieldCollectionsUtils fieldCollectionsUtils;
+
+    /**
+     * @param fieldCollectionsUtils
+     */
+    public TransitionsManager(FieldCollectionsUtils fieldCollectionsUtils) {
+        this.fieldCollectionsUtils = fieldCollectionsUtils;
+    }
+
     /**
      * @param gvIssue the current issue.
      * @return a List with the Transition Summaries.
      *
      * It obtains all Transition Summaries.
      */
-    public static List<TransitionSummary> getTransitionSummary(Issue issue){
+    public List<TransitionSummary> getTransitionSummary(Issue issue){
         Timestamp tsCreated = issue.getTimestamp("created");
         // Reads all status changes, associated with the execution of transitions.
         List<Transition> statusChanges = getStatusChanges(issue, tsCreated);
@@ -56,7 +66,10 @@ public class TransitionsManager {
             if (summary.containsKey(transitionId)) {
                 tranSummary = (TransitionSummary) summary.get(transitionId);
             } else {
-                tranSummary = new TransitionSummary(transitionId, trans.getFromStatus(), trans.getToStatus());
+                tranSummary = new TransitionSummary(
+                        fieldCollectionsUtils,
+                        transitionId, trans.getFromStatus(), trans.getToStatus()
+                );
 
                 summary.put(transitionId, tranSummary);
                 retList.add(tranSummary);
@@ -76,7 +89,7 @@ public class TransitionsManager {
      *
      * It obtains all status changes data from the Change History.
      */
-    private static List<Transition> getStatusChanges(Issue issue, Timestamp tsCreated){
+    private List<Transition> getStatusChanges(Issue issue, Timestamp tsCreated){
         OfBizDelegator delegator = new DefaultOfBizDelegator(CoreFactory.getGenericDelegator());
         @SuppressWarnings("unchecked")
         Map<String, Object> params = EasyMap.build("issue", issue.getLong("id"));

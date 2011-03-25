@@ -34,12 +34,15 @@ public abstract class GenericValidator implements Validator {
     private Issue issue = null;
 
     protected final FieldCollectionsUtils fieldCollectionsUtils;
+    protected final WorkflowUtils workflowUtils;
 
     /**
      * @param fieldCollectionsUtils
+     * @param workflowUtils
      */
-    public GenericValidator(FieldCollectionsUtils fieldCollectionsUtils) {
+    public GenericValidator(FieldCollectionsUtils fieldCollectionsUtils, WorkflowUtils workflowUtils) {
         this.fieldCollectionsUtils = fieldCollectionsUtils;
+        this.workflowUtils = workflowUtils;
     }
 
     protected abstract void validate() throws InvalidInputException, WorkflowException;
@@ -126,7 +129,7 @@ public abstract class GenericValidator implements Validator {
             Integer actionId = (Integer) vars.get("actionId");
             ActionDescriptor actionDescriptor = workflowDescriptor.getAction(actionId.intValue());
 
-            return WorkflowUtils.getFieldScreen(actionDescriptor);
+            return workflowUtils.getFieldScreen(actionDescriptor);
         } else {
             return null;
         }

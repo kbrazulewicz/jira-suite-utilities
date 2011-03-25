@@ -25,6 +25,15 @@ import com.opensymphony.workflow.WorkflowContext;
 public class UserIsInAnyGroupsCondition extends AbstractJiraCondition {
     private final Logger log = LoggerFactory.getLogger(UserIsInAnyGroupsCondition.class);
 
+    private final WorkflowUtils workflowUtils;
+
+    /**
+     * @param workflowUtils
+     */
+    public UserIsInAnyGroupsCondition(WorkflowUtils workflowUtils) {
+        this.workflowUtils = workflowUtils;
+    }
+
     /* (non-Javadoc)
      * @see com.opensymphony.workflow.Condition#passesCondition(java.util.Map, java.util.Map, com.opensymphony.module.propertyset.PropertySet)
      */
@@ -47,7 +56,7 @@ public class UserIsInAnyGroupsCondition extends AbstractJiraCondition {
             // If there aren't groups selected, hidGroupsList is equal to "".
             // And groupsSelected will be an empty collection.
             String strGroupsSelected = (String) args.get("hidGroupsList");
-            Collection groupsSelected = WorkflowUtils.getGroups(strGroupsSelected, WorkflowUtils.SPLITTER);
+            Collection groupsSelected = workflowUtils.getGroups(strGroupsSelected, WorkflowUtils.SPLITTER);
 
             Iterator<Group> it = groupsSelected.iterator();
 

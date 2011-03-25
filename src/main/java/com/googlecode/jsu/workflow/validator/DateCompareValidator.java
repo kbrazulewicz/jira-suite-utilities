@@ -54,9 +54,10 @@ public class DateCompareValidator extends GenericValidator {
     public DateCompareValidator(
             ApplicationProperties applicationProperties,
             ConditionCheckerFactory conditionCheckerFactory,
-            FieldCollectionsUtils fieldCollectionsUtils
+            FieldCollectionsUtils fieldCollectionsUtils,
+            WorkflowUtils workflowUtils
     ) {
-        super(fieldCollectionsUtils);
+        super(fieldCollectionsUtils, workflowUtils);
 
         this.applicationProperties = applicationProperties;
         this.conditionCheckerFactory = conditionCheckerFactory;
@@ -66,16 +67,16 @@ public class DateCompareValidator extends GenericValidator {
      * @see com.googlecode.jsu.workflow.validator.GenericValidator#validate()
      */
     protected void validate() throws InvalidInputException, WorkflowException {
-        Field field1 = WorkflowUtils.getFieldFromKey(date1);
-        Field field2 = WorkflowUtils.getFieldFromKey(date2);
+        Field field1 = workflowUtils.getFieldFromKey(date1);
+        Field field2 = workflowUtils.getFieldFromKey(date2);
 
         ConditionType condition = conditionCheckerFactory.findConditionById(conditionId);
         boolean includeTime = (Integer.parseInt(includeTimeValue) == 1) ? true : false;
 
         // Compare Dates.
         if ((field1 != null) && (field2 != null)) {
-            Object objValue1 = WorkflowUtils.getFieldValueFromIssue(getIssue(), field1);
-            Object objValue2 = WorkflowUtils.getFieldValueFromIssue(getIssue(), field2);
+            Object objValue1 = workflowUtils.getFieldValueFromIssue(getIssue(), field1);
+            Object objValue2 = workflowUtils.getFieldValueFromIssue(getIssue(), field2);
             Date objDate1, objDate2;
 
             try {
