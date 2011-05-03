@@ -5,12 +5,12 @@
     <groupId>com.googlecode</groupId>
     <artifactId>jira-suite-utilities</artifactId>
     <name>JIRA Suite Utilities</name>
-    <version>0.8.1-SNAPSHOT</version>
+    <version>1.0.0.1-SNAPSHOT</version>
     <packaging>atlassian-plugin</packaging>
 
     <organization>
-        <name>Quadratica SRL</name>
-        <url>http://www.quadratica.com.ar/</url>
+        <name>beecom AG</name>
+        <url>http://www.beecom.ch/</url>
     </organization>
 
     <description>Many objects to extend JIRA</description>
@@ -94,37 +94,6 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-release-plugin</artifactId>
-                <version>2.1</version>
-                <configuration>
-                    <tagBase>https://jira-suite-utilities.googlecode.com/svn/tags</tagBase>
-                    <releaseProfiles>release</releaseProfiles>
-                    <goals>gcupload:gcupload</goals>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.riedelcastro</groupId>
-                <artifactId>gcupload-maven-plugin</artifactId>
-                <version>0.9</version>
-                <configuration>
-                    <projectName>jira-suite-utilities</projectName>
-                    <uploads>
-                        <upload>
-                            <summary>${project.name} version ${project.version} (binaries)</summary>
-                            <extensions>jar</extensions>
-                            <labels>Type-Package,OpSys-All,Featured</labels>
-                        </upload>
-                        <upload>
-                            <summary>${project.name} version ${project.version} (sources)</summary>
-                            <postfix>sources</postfix>
-                            <extensions>jar</extensions>
-                            <labels>Type-Source,OpSys-All</labels>
-                        </upload>
-                    </uploads>
-                </configuration>
-            </plugin>
         </plugins>
         <resources>
             <resource>
@@ -160,30 +129,18 @@
         <developerConnection>${scm.connection}</developerConnection>
     </scm>
 
-    <repositories>
+    <distributionManagement>
         <repository>
-            <id>atlassian-m2</id>
-            <url>https://m2proxy.atlassian.com/repository/public</url>
-            <snapshots>
-                <enabled>false</enabled>
-                <updatePolicy>always</updatePolicy>
-            </snapshots>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
+            <id>atlassian-m2-repository</id>
+            <name>Atlassian Public Repository</name>
+            <url>https://maven.atlassian.com/public</url>
         </repository>
-    </repositories>
-
-    <pluginRepositories>
-        <pluginRepository>
-            <id>atlassian-m2</id>
-            <url>https://m2proxy.atlassian.com/repository/public</url>
-        </pluginRepository>
-        <pluginRepository>
-            <id>repository.riedelcastro.org</id>
-            <url>http://repository.riedelcastro.org</url>
-        </pluginRepository>
-    </pluginRepositories>
+        <snapshotRepository>
+            <id>atlassian-m2-snapshot-repository</id>
+            <name>Atlassian Public Snapshot Repository</name>
+            <url>https://maven.atlassian.com/public-snapshot</url>
+        </snapshotRepository>
+    </distributionManagement>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -192,6 +149,6 @@
         <jira.data.version>4.3</jira.data.version>
         <jira.plugin.version>3.2.4</jira.plugin.version>
 
-        <scm.connection>scm:hg:git+ssh://git@github.com:abashev/jira-suite-utilities.git</scm.connection>
+        <scm.connection>scm:git@github.com:atlassian/jira-suite-utilities.git</scm.connection>
     </properties>
 </project>
