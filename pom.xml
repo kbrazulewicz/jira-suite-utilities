@@ -131,14 +131,14 @@
 
     <distributionManagement>
         <repository>
-            <id>atlassian-m2-repository</id>
-            <name>Atlassian Public Repository</name>
-            <url>https://maven.atlassian.com/public</url>
+            <id>atlassian-contrib</id>
+            <name>Atlassian Contrib Repository</name>
+            <url>https://maven.atlassian.com/content/repositories/atlassian-contrib</url>
         </repository>
         <snapshotRepository>
-            <id>atlassian-m2-snapshot-repository</id>
-            <name>Atlassian Public Snapshot Repository</name>
-            <url>https://maven.atlassian.com/public-snapshot</url>
+            <id>atlassian-contrib-snapshot</id>
+            <name>Atlassian Contrib Snapshot Repository</name>
+            <url>https://maven.atlassian.com/content/repositories/atlassian-contrib-snapshot</url>
         </snapshotRepository>
     </distributionManagement>
 
