@@ -384,7 +384,6 @@ public class FieldCollectionsUtils {
         return asFields(
                 CREATED,
                 TIMETRACKING,
-                TIME_ORIGINAL_ESTIMATE,
                 PROGRESS,
                 AGGREGATE_TIME_ORIGINAL_ESTIMATE,
                 AGGREGATE_PROGRESS,
