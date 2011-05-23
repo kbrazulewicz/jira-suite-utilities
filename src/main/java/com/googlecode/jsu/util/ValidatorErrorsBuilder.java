@@ -33,34 +33,24 @@ public class ValidatorErrorsBuilder {
         this.addError(null, message);
     }
 
-    public void process() throws WorkflowException, InvalidInputException {
+    public void process() throws InvalidInputException {
         if (this.fields.size() == 0) {
             return;
         }
 
-        if (forScreen) {
-            InvalidInputException e = new InvalidInputException();
+        InvalidInputException e = new InvalidInputException();
 
-            for (int i = 0; i < fields.size(); i++) {
-                Field f = this.fields.get(i);
-                String m = this.messages.get(i);
+        for (int i = 0; i < fields.size(); i++) {
+            Field f = this.fields.get(i);
+            String m = this.messages.get(i);
 
-                if (f == null) {
-                    e.addError(m);
-                } else {
-                    e.addError(f.getId(), m);
-                }
+            if (f == null || ! forScreen) {
+                e.addError(m);
+            } else {
+                e.addError(f.getId(), m);
             }
-
-            throw e;
-        } else {
-            StringBuilder sb = new StringBuilder();
-
-            for (String message : this.messages) {
-                sb.append(message).append(" ");
-            }
-
-            throw new WorkflowException(sb.toString());
         }
+
+        throw e;
     }
 }
