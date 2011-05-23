@@ -11,6 +11,7 @@ import com.googlecode.jsu.util.FieldCollectionsUtils;
 import com.googlecode.jsu.util.WorkflowUtils;
 import com.opensymphony.workflow.loader.AbstractDescriptor;
 import com.opensymphony.workflow.loader.ValidatorDescriptor;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * @author Gustavo Martin.
@@ -98,6 +99,9 @@ public class WorkflowWindowsDateValidatorPluginFactory extends
             String date1 = extractSingleParam(validatorParams, "date1FieldsList");
             String date2 = extractSingleParam(validatorParams, "date2FieldsList");
             String windowsDays = extractSingleParam(validatorParams, "windowsDays");
+            if (StringUtils.isEmpty(windowsDays)) {
+                windowsDays = "0";
+            }
 
             params.put("date1Selected", date1);
             params.put("date2Selected", date2);
