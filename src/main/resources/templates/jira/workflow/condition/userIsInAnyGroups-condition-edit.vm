@@ -1,10 +1,10 @@
-<tr bgcolor=ffffff>
-    <td align="center" valign="center" bgcolor="fffff0">
+<tr bgcolor="#ffffff">
+    <td align="center" valign="center" bgcolor="#fffff0">
         <span class="label">Groups allowed to execute this action:</span>
     </td>
 </tr>
 <tr>
-    <td bgcolor="ffffff" nowrap>
+    <td bgcolor="#ffffff" nowrap>
     	    <table width=100%>
     	        <tr align="center">
 		                <td align="center" width=50% valign="top">
