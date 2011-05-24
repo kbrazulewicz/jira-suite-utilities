@@ -6,6 +6,7 @@ import static com.googlecode.jsu.workflow.WorkflowFieldsRequiredValidatorPluginF
 
 import java.util.Collection;
 
+import com.atlassian.jira.issue.IssueFieldConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,6 +69,9 @@ public class FieldsRequiredValidator extends GenericValidator {
         for (Field field : fieldsSelected) {
             if (fieldCollectionsUtils.isIssueHasField(issue, field)) {
                 Object fieldValue = workflowUtils.getFieldValueFromIssue(issue, field);
+                if (fieldValue == null && IssueFieldConstants.COMMENT.equals(field.getId())) {
+                    fieldValue = getTransitionComment();
+                }
 
                 if (log.isDebugEnabled()) {
                     log.debug(
