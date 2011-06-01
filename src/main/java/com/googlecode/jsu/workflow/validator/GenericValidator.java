@@ -1,10 +1,5 @@
 package com.googlecode.jsu.workflow.validator;
 
-import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.atlassian.jira.issue.Issue;
 import com.atlassian.jira.issue.fields.Field;
 import com.atlassian.jira.issue.fields.screen.FieldScreen;
@@ -21,6 +16,10 @@ import com.opensymphony.workflow.Validator;
 import com.opensymphony.workflow.WorkflowException;
 import com.opensymphony.workflow.loader.ActionDescriptor;
 import com.opensymphony.workflow.loader.WorkflowDescriptor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Map;
 
 /**
  * @author <A href="mailto:abashev at gmail dot com">Alexey Abashev</A>
@@ -119,7 +118,11 @@ public abstract class GenericValidator implements Validator {
     ) {
         if (hasViewScreen()) {
             if (fieldCollectionsUtils.isFieldOnScreen(this.issue, field, getFieldScreen())) {
-                this.errorBuilder.addError(field, messageIfOnScreen);
+                if (fieldCollectionsUtils.cannotSetValidationMessageToField(field)) {
+                    this.errorBuilder.addError(messageIfOnScreen);
+                } else {
+                    this.errorBuilder.addError(field, messageIfOnScreen);
+                }
             } else {
                 this.errorBuilder.addError(messageIfHidden);
             }

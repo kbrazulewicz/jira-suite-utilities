@@ -206,6 +206,9 @@ public class FieldCollectionsUtils {
      * @return if a field is displayed in a screen.
      */
     public boolean isFieldOnScreen(Issue issue, Field field, FieldScreen fieldScreen){
+        if (IssueFieldConstants.COMMENT.equals(field.getId())) { //Always present but cannot be detected.
+            return true;
+        }
         if (fieldManager.isCustomField(field)) {
             CustomFieldType type = ((CustomField) field).getCustomFieldType();
 
@@ -225,13 +228,21 @@ public class FieldCollectionsUtils {
             while(itFields.hasNext() && !retVal){
                 FieldScreenLayoutItem fieldScreenLayoutItem = itFields.next();
 
-                if (field.getId().equals(fieldScreenLayoutItem.getFieldId()) && isIssueHasField(issue, field)) {
+                if (field.getId().equals(fieldScreenLayoutItem.getFieldId()) && isIssueHasField(issue, field) ||
+                    TIME_TRACKING_FIELDS.contains(field.getId()) && IssueFieldConstants.TIMETRACKING.equals(fieldScreenLayoutItem.getFieldId())) {
                     retVal = true;
                 }
             }
         }
 
         return retVal;
+    }
+
+    /*
+    It's not possible to put a validation message on a timetracking field.
+     */
+    public boolean cannotSetValidationMessageToField(Field field) {
+        return TIME_TRACKING_FIELDS.contains(field.getId());
     }
 
     /**
