@@ -51,6 +51,15 @@
                 <role>Developer</role>
             </roles>
         </developer>
+        <developer>
+            <name>Stefan Forstmoser</name>
+            <id>sforstmoser</id>
+            <email>no_spam@no_spam.com</email>
+            <organization>beecom AG</organization>
+            <roles>
+                <role>Developer</role>
+            </roles>
+        </developer>
     </developers>
 
     <build>
