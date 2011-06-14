@@ -1,20 +1,18 @@
 package com.googlecode.jsu.workflow.condition;
 
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import com.atlassian.crowd.embedded.api.CrowdService;
+import com.atlassian.crowd.embedded.api.Group;
+import com.atlassian.crowd.embedded.api.User;
+import com.atlassian.jira.user.util.UserManager;
 import com.atlassian.jira.workflow.condition.AbstractJiraCondition;
 import com.googlecode.jsu.util.WorkflowUtils;
 import com.opensymphony.module.propertyset.PropertySet;
-import com.opensymphony.user.EntityNotFoundException;
-import com.opensymphony.user.Group;
-import com.opensymphony.user.User;
-import com.opensymphony.user.UserManager;
 import com.opensymphony.workflow.WorkflowContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Collection;
+import java.util.Map;
 
 /**
  * @author Gustavo Martin
@@ -26,49 +24,38 @@ public class UserIsInAnyGroupsCondition extends AbstractJiraCondition {
     private final Logger log = LoggerFactory.getLogger(UserIsInAnyGroupsCondition.class);
 
     private final WorkflowUtils workflowUtils;
+    private final UserManager userManager;
+    private final CrowdService crowdService;
 
-    /**
-     * @param workflowUtils
-     */
-    public UserIsInAnyGroupsCondition(WorkflowUtils workflowUtils) {
+    public UserIsInAnyGroupsCondition(WorkflowUtils workflowUtils, UserManager userManager, CrowdService crowdService) {
         this.workflowUtils = workflowUtils;
+        this.userManager = userManager;
+        this.crowdService = crowdService;
     }
 
     /* (non-Javadoc)
      * @see com.opensymphony.workflow.Condition#passesCondition(java.util.Map, java.util.Map, com.opensymphony.module.propertyset.PropertySet)
      */
     public boolean passesCondition(Map transientVars, Map args, PropertySet ps) {
-        boolean allowUser = false;
+        // Obtains the current user.
+        WorkflowContext context = (WorkflowContext) transientVars.get("context");
+        String caller = context.getCaller();
 
-        try {
-            // Obtains the current user.
-            WorkflowContext context = (WorkflowContext) transientVars.get("context");
-            String caller = context.getCaller();
-
-            if (caller == null) {
-                // User not logged in
-
-                return false;
-            }
-
-            User userLogged = UserManager.getInstance().getUser(caller);
+        if (caller != null) { // null -> User not logged in
+            User userLogged = userManager.getUserObject(caller);
 
             // If there aren't groups selected, hidGroupsList is equal to "".
             // And groupsSelected will be an empty collection.
             String strGroupsSelected = (String) args.get("hidGroupsList");
-            Collection groupsSelected = workflowUtils.getGroups(strGroupsSelected, WorkflowUtils.SPLITTER);
+            Collection<Group> groupsSelected = workflowUtils.getGroups(strGroupsSelected, WorkflowUtils.SPLITTER);
 
-            Iterator<Group> it = groupsSelected.iterator();
-
-            while (it.hasNext() && !allowUser){
-                if (userLogged.inGroup(it.next())){
-                    allowUser = true;
+            for (Group group : groupsSelected) {
+                if (crowdService.isUserMemberOfGroup(userLogged, group)) {
+                    return true;
                 }
             }
-        } catch (EntityNotFoundException e) {
-            log.error("Unable to find user from context", e);
         }
 
-        return allowUser;
+        return false;
     }
 }

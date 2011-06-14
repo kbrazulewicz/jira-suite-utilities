@@ -11,15 +11,15 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import com.atlassian.crowd.embedded.api.CrowdService;
+import com.atlassian.jira.ComponentManager;
+import com.atlassian.jira.user.util.UserManager;
 import org.apache.commons.lang.StringUtils;
 import org.ofbiz.core.entity.GenericEntityException;
 import org.ofbiz.core.entity.GenericValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.atlassian.core.user.GroupUtils;
-import com.atlassian.core.user.UserUtils;
-import com.atlassian.jira.ManagerFactory;
 import com.atlassian.jira.bc.project.component.ProjectComponent;
 import com.atlassian.jira.bc.project.component.ProjectComponentManager;
 import com.atlassian.jira.config.properties.APKeys;
@@ -55,9 +55,8 @@ import com.atlassian.jira.project.version.VersionManager;
 import com.atlassian.jira.util.ObjectUtils;
 import com.atlassian.jira.workflow.WorkflowActionsBean;
 import com.opensymphony.user.Entity;
-import com.opensymphony.user.EntityNotFoundException;
-import com.opensymphony.user.Group;
-import com.opensymphony.user.User;
+import com.atlassian.crowd.embedded.api.Group;
+import com.atlassian.crowd.embedded.api.User;
 import com.opensymphony.workflow.loader.AbstractDescriptor;
 import com.opensymphony.workflow.loader.ActionDescriptor;
 import com.opensymphony.workflow.loader.FunctionDescriptor;
@@ -84,6 +83,8 @@ public class WorkflowUtils {
     private final ApplicationProperties applicationProperties;
     private final FieldCollectionsUtils fieldCollectionsUtils;
     private final IssueLinkManager issueLinkManager;
+    private final UserManager userManager;
+    private final CrowdService crowdService;
 
     /**
      * @param fieldManager
@@ -99,7 +100,8 @@ public class WorkflowUtils {
             FieldManager fieldManager, IssueManager issueManager,
             ProjectComponentManager projectComponentManager, VersionManager versionManager,
             IssueSecurityLevelManager issueSecurityLevelManager, ApplicationProperties applicationProperties,
-            FieldCollectionsUtils fieldCollectionsUtils, IssueLinkManager issueLinkManager
+            FieldCollectionsUtils fieldCollectionsUtils, IssueLinkManager issueLinkManager,
+            UserManager userManager, CrowdService crowdService
     ) {
         this.fieldManager = fieldManager;
         this.issueManager = issueManager;
@@ -109,6 +111,8 @@ public class WorkflowUtils {
         this.applicationProperties = applicationProperties;
         this.fieldCollectionsUtils = fieldCollectionsUtils;
         this.issueLinkManager = issueLinkManager;
+        this.userManager = userManager;
+        this.crowdService = crowdService;
     }
 
     /**
@@ -543,7 +547,7 @@ public class WorkflowUtils {
                 } else if (value instanceof Resolution) {
                     issue.setResolutionId(((Resolution) value).getId());
                 } else if (value instanceof String) {
-                    Collection<Resolution> resolutions = ManagerFactory.getConstantsManager().getResolutionObjects();
+                    Collection<Resolution> resolutions = ComponentManager.getInstance().getConstantsManager().getResolutionObjects();
                     Resolution resolution = null;
                     String s = ((String) value).trim();
 
@@ -571,7 +575,7 @@ public class WorkflowUtils {
                 } else if (value instanceof Status) {
                     issue.setStatusId(((Status) value).getId());
                 } else if (value instanceof String) {
-                    Status status = ManagerFactory.getConstantsManager().getStatusByName((String) value);
+                    Status status = ComponentManager.getInstance().getConstantsManager().getStatusByName((String) value);
 
                     if (status != null) {
                         issue.setStatusId(status.getId());
@@ -621,13 +625,10 @@ public class WorkflowUtils {
                 } else if (value instanceof User) {
                     issue.setAssignee((User) value);
                 } else if (value instanceof String) {
-                    try {
-                        User user = UserUtils.getUser((String) value);
-
-                        if (null != user) {
-                            issue.setAssignee(user);
-                        }
-                    } catch (EntityNotFoundException e) {
+                    User user = userManager.getUserObject((String) value);
+                    if (null != user) {
+                        issue.setAssignee(user);
+                    } else {
                         throw new IllegalArgumentException(String.format("User \"%s\" not found", value));
                     }
                 }
@@ -661,13 +662,10 @@ public class WorkflowUtils {
                 } else if (value instanceof User) {
                     issue.setReporter((User) value);
                 } else if (value instanceof String) {
-                    try {
-                        User user = UserUtils.getUser((String) value);
-
-                        if (user != null) {
-                            issue.setReporter(user);
-                        }
-                    } catch (EntityNotFoundException e) {
+                    User user = userManager.getUserObject((String) value);
+                    if (user != null) {
+                        issue.setReporter(user);
+                    } else {
                         throw new IllegalArgumentException(String.format("User \"%s\" not found", value));
                     }
                 }
@@ -727,8 +725,7 @@ public class WorkflowUtils {
         List<Group> groupList = new ArrayList<Group>(groups.length);
 
         for (String s : groups) {
-            Group group = GroupUtils.getGroup(s);
-
+            Group group = crowdService.getGroup(s);
             groupList.add(group);
         }
 
@@ -736,7 +733,7 @@ public class WorkflowUtils {
     }
 
     /**
-     * @param group
+     * @param groups
      * @param splitter
      * @return a String with the groups selected.
      *

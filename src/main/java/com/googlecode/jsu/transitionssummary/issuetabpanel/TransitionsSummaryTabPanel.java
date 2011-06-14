@@ -9,9 +9,10 @@ import com.atlassian.jira.issue.tabpanels.GenericMessageAction;
 import com.atlassian.jira.plugin.issuetabpanel.IssueAction;
 import com.atlassian.jira.plugin.issuetabpanel.IssueTabPanel;
 import com.atlassian.jira.plugin.issuetabpanel.IssueTabPanelModuleDescriptor;
+import com.atlassian.jira.user.util.UserManager;
 import com.googlecode.jsu.transitionssummary.TransitionSummary;
 import com.googlecode.jsu.transitionssummary.TransitionsManager;
-import com.opensymphony.user.User;
+import com.opensymphony.user.User; //In JIRA 4.3 interface IssueTabPanel is still using deprecated User.
 
 /**
  * @author Gustavo Martin
@@ -24,12 +25,11 @@ public class TransitionsSummaryTabPanel implements IssueTabPanel {
     protected IssueTabPanelModuleDescriptor descriptor;
 
     private final TransitionsManager transitionsManager;
+    private final UserManager userManager;
 
-    /**
-     * @param transitionsManager
-     */
-    public TransitionsSummaryTabPanel(TransitionsManager transitionsManager) {
+    public TransitionsSummaryTabPanel(TransitionsManager transitionsManager, UserManager userManager) {
         this.transitionsManager = transitionsManager;
+        this.userManager = userManager;
     }
 
     /* (non-Javadoc)
@@ -55,7 +55,7 @@ public class TransitionsSummaryTabPanel implements IssueTabPanel {
         } else {
             Collections.sort(transitions, new TransitionSummaryComparator());
 
-            retList.add(new TransitionSummaryAction(transitions, descriptor));
+            retList.add(new TransitionSummaryAction(transitions, descriptor, userManager));
         }
 
         return retList;

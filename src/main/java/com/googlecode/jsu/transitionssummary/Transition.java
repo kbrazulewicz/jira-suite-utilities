@@ -2,7 +2,7 @@ package com.googlecode.jsu.transitionssummary;
 
 import java.sql.Timestamp;
 
-import com.atlassian.jira.ManagerFactory;
+import com.atlassian.jira.ComponentManager;
 import com.atlassian.jira.issue.status.Status;
 
 /**
@@ -35,7 +35,7 @@ public class Transition {
 
         // It calculates the duration since the transition began until the next one is executed.
         if (this.startAt != null) {
-            retVal = new Long(this.changedAt.getTime() - this.startAt.getTime());
+            retVal = this.changedAt.getTime() - this.startAt.getTime();
         }
 
         this.duration = retVal;
@@ -57,13 +57,13 @@ public class Transition {
         return (fromStatus == null ? removedStatus : fromStatus);
     }
     public void setFromStatus(Long fromStatus) {
-        this.fromStatus = ManagerFactory.getConstantsManager().getStatusObject(String.valueOf(fromStatus));
+        this.fromStatus = ComponentManager.getInstance().getConstantsManager().getStatusObject(String.valueOf(fromStatus));
     }
     public Status getToStatus() {
         return (toStatus == null ? removedStatus : toStatus);
     }
     public void setToStatus(Long toStatus) {
-        this.toStatus = ManagerFactory.getConstantsManager().getStatusObject(String.valueOf(toStatus));
+        this.toStatus = ComponentManager.getInstance().getConstantsManager().getStatusObject(String.valueOf(toStatus));
     }
     public Timestamp getStartAt() {
         return startAt;

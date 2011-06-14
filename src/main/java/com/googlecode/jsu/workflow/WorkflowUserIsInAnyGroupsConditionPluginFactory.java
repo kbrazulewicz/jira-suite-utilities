@@ -4,9 +4,10 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.atlassian.core.user.GroupUtils;
+import com.atlassian.crowd.embedded.api.Group;
 import com.atlassian.jira.plugin.workflow.AbstractWorkflowPluginFactory;
 import com.atlassian.jira.plugin.workflow.WorkflowPluginConditionFactory;
+import com.atlassian.jira.security.groups.GroupManager;
 import com.googlecode.jsu.util.WorkflowUtils;
 import com.opensymphony.workflow.loader.AbstractDescriptor;
 import com.opensymphony.workflow.loader.ConditionDescriptor;
@@ -21,19 +22,18 @@ public class WorkflowUserIsInAnyGroupsConditionPluginFactory extends
         AbstractWorkflowPluginFactory implements WorkflowPluginConditionFactory {
 
     private final WorkflowUtils workflowUtils;
+    private final GroupManager groupManager;
 
-    /**
-     * @param workflowUtils
-     */
-    public WorkflowUserIsInAnyGroupsConditionPluginFactory(WorkflowUtils workflowUtils) {
+    public WorkflowUserIsInAnyGroupsConditionPluginFactory(WorkflowUtils workflowUtils, GroupManager groupManager) {
         this.workflowUtils = workflowUtils;
+        this.groupManager = groupManager;
     }
 
     /* (non-Javadoc)
      * @see com.googlecode.jsu.workflow.AbstractWorkflowPluginFactory#getVelocityParamsForInput(java.util.Map)
      */
     protected void getVelocityParamsForInput(Map<String, Object> velocityParams) {
-        velocityParams.put("val-groupsList", GroupUtils.getGroups());
+        velocityParams.put("val-groupsList", groupManager.getAllGroups());
         velocityParams.put("val-splitter", WorkflowUtils.SPLITTER);
     }
 
@@ -53,9 +53,9 @@ public class WorkflowUserIsInAnyGroupsConditionPluginFactory extends
         velocityParams.remove("val-groupsList");
 
         String strGroupsSelected = (String)args.get("hidGroupsList");
-        Collection groupsSelected = workflowUtils.getGroups(strGroupsSelected, WorkflowUtils.SPLITTER);
+        Collection<Group> groupsSelected = workflowUtils.getGroups(strGroupsSelected, WorkflowUtils.SPLITTER);
 
-        Collection groups = GroupUtils.getGroups();
+        Collection<Group> groups = groupManager.getAllGroups();
         groups.removeAll(groupsSelected);
 
         velocityParams.put("val-groupsListSelected", groupsSelected);

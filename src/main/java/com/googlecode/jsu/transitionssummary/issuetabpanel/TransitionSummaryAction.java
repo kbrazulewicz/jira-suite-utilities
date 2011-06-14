@@ -1,19 +1,17 @@
 package com.googlecode.jsu.transitionssummary.issuetabpanel;
 
+import com.atlassian.jira.plugin.issuetabpanel.AbstractIssueAction;
+import com.atlassian.jira.plugin.issuetabpanel.IssueTabPanelModuleDescriptor;
+import com.atlassian.jira.user.util.UserManager;
+import com.atlassian.jira.web.action.JiraWebActionSupport;
+import com.googlecode.jsu.transitionssummary.TransitionSummary;
+import org.ofbiz.core.util.UtilMisc;
+
 import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-
-import org.ofbiz.core.util.UtilMisc;
-
-import com.atlassian.core.user.UserUtils;
-import com.atlassian.jira.plugin.issuetabpanel.AbstractIssueAction;
-import com.atlassian.jira.plugin.issuetabpanel.IssueTabPanelModuleDescriptor;
-import com.atlassian.jira.web.action.JiraWebActionSupport;
-import com.googlecode.jsu.transitionssummary.TransitionSummary;
-import com.opensymphony.user.EntityNotFoundException;
 
 /**
  * @author Gustavo Martin
@@ -24,19 +22,19 @@ public class TransitionSummaryAction extends AbstractIssueAction {
     protected final IssueTabPanelModuleDescriptor descriptor;
     protected List<TransitionSummary> tranSummaries;
     protected Timestamp timePerformed;
+    protected final UserManager userManager;
 
     /**
-     * @param issue current issue.
-     * @param remoteUser current user (logged in).
      * @param tranSummaries List containing TransitionSummary objects.
      * @param descriptor
      */
-    public TransitionSummaryAction(List<TransitionSummary> tranSummaries, IssueTabPanelModuleDescriptor descriptor){
+    public TransitionSummaryAction(List<TransitionSummary> tranSummaries, IssueTabPanelModuleDescriptor descriptor, UserManager userManager){
         super(descriptor);
 
         this.tranSummaries = tranSummaries;
         this.descriptor = descriptor;
         this.timePerformed = new Timestamp(Calendar.getInstance().getTimeInMillis());
+        this.userManager = userManager;
     }
 
     /**
@@ -59,7 +57,8 @@ public class TransitionSummaryAction extends AbstractIssueAction {
      * @see com.atlassian.jira.issue.action.IssueAction#getHtml(com.atlassian.jira.web.action.JiraWebActionSupport)
      */
     public String getHtml(JiraWebActionSupport webAction) {
-        Map params = UtilMisc.toMap("webAction", webAction, "action", this);
+        @SuppressWarnings("unchecked")
+        Map<String, Object> params = UtilMisc.toMap("webAction", webAction, "action", this);
 
         return descriptor.getHtml("view", params);
     }
@@ -68,13 +67,8 @@ public class TransitionSummaryAction extends AbstractIssueAction {
         params.put("action", this);
     }
 
-    public boolean isUserExists(String username) {
-        try {
-            UserUtils.getUser(username);
-        } catch (EntityNotFoundException e) {
-            return false;
-        }
 
-        return true;
+    public boolean isUserExists(String username) {
+        return userManager.getUserObject(username) != null;
     }
 }

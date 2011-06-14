@@ -10,7 +10,7 @@ import com.atlassian.jira.issue.fields.Field;
 import com.atlassian.jira.issue.util.IssueChangeHolder;
 import com.googlecode.jsu.util.WorkflowUtils;
 import com.opensymphony.module.propertyset.PropertySet;
-import com.opensymphony.user.User;
+import com.atlassian.crowd.embedded.api.User;
 import com.opensymphony.workflow.WorkflowException;
 
 /**
@@ -38,12 +38,12 @@ public class UpdateIssueCustomFieldPostFunction extends AbstractPreserveChangesP
             Map<String, Object> transientVars, Map<String, String> args,
             PropertySet ps, IssueChangeHolder holder
     ) throws WorkflowException {
-        String fieldKey = (String) args.get(TARGET_FIELD_NAME);
+        String fieldKey = args.get(TARGET_FIELD_NAME);
 
         final Field field = workflowUtils.getFieldFromKey(fieldKey);
         final String fieldName = (field != null) ? field.getName() : "null";
 
-        String fieldValue = (String) args.get(TARGET_FIELD_VALUE);
+        String fieldValue = args.get(TARGET_FIELD_VALUE);
 
         if ((fieldValue != null) && ("null".equals(fieldValue))) {
             fieldValue = null;
