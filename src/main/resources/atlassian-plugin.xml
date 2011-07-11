@@ -5,7 +5,8 @@
     <plugin-info>
         <description>${project.description}</description>
         <version>${project.version}</version>
-        <vendor name="${project.organization.name}" url="${project.organization.url}" />
+        <vendor name="beecom AG" url="http://www.beecom.ch/"/>
+        <application-version min="4.3" max="4.3"/>
     </plugin-info>
 
   <!-- Custom Fields -->
