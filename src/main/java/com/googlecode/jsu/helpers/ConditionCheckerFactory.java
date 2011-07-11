@@ -90,7 +90,12 @@ public class ConditionCheckerFactory {
      * @return
      */
     public List<ComparisonType> getComparisonTypes() {
-        return new ArrayList<ComparisonType>(COMPARISONS_CACHE.values());
+
+        List<ComparisonType> comparisonTypes = new ArrayList<ComparisonType>(COMPARISONS_CACHE.values());
+        // Date fields are removed, because date comparison is not implemented yet. - See also FieldCollectionsUtils.
+        comparisonTypes.remove(DATE);
+        comparisonTypes.remove(DATE_WITHOUT_TIME);
+        return comparisonTypes;
     }
 
     /**

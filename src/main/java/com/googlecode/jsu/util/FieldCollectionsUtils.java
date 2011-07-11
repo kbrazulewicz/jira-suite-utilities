@@ -421,7 +421,7 @@ public class FieldCollectionsUtils {
         List<Field> allFields = getAllFields();
 
         allFields.removeAll(getNonValueFieldConditionFields());
-        // Date fields are removed, because date comparison is not implemented yet.
+        // Date fields are removed, because date comparison is not implemented yet. - See also ConditionCheckerFactory.
         allFields.removeAll(getAllDateFields());
 
         return allFields;
