@@ -6,7 +6,7 @@
         <description>${project.description}</description>
         <version>${project.version}</version>
         <vendor name="beecom AG" url="http://www.beecom.ch/"/>
-        <application-version min="4.3" max="4.3"/>
+        <application-version min="4.4" max="4.4"/>
     </plugin-info>
 
   <!-- Custom Fields -->
