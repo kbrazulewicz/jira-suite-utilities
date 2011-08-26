@@ -1,5 +1,6 @@
 package com.googlecode.jsu.workflow.condition;
 
+import java.util.Collection;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -56,9 +57,21 @@ public class ValueFieldCondition extends AbstractJiraCondition {
             Field field = workflowUtils.getFieldFromKey(fieldId);
             Object fieldValue = workflowUtils.getFieldValueFromIssue(issue, field);
 
-            result = conditionCheckerFactory.
+            //With mutliple values, we are happy, if one is matching.
+            if (fieldValue instanceof Collection) {
+                for (Object o : (Collection) fieldValue) {
+                    result = conditionCheckerFactory.
+                            getChecker(comparison, condition).
+                            checkValues(o, valueForCompare);
+                    if (result) {
+                        break;
+                    }
+                }
+            } else {
+                result = conditionCheckerFactory.
                     getChecker(comparison, condition).
                     checkValues(fieldValue, valueForCompare);
+            }
 
             if (log.isDebugEnabled()) {
                 log.debug(

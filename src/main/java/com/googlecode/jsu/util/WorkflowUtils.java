@@ -396,6 +396,8 @@ public class WorkflowUtils {
 
                     newValue = cfType.getValueFromCustomFieldParams(fieldParams);
                 }
+            } else if (newValue instanceof Option && ! (cfType instanceof MultipleSettableCustomFieldType)) {
+                newValue = ((Option) newValue).getValue();
             }
 
             if (log.isDebugEnabled()) {
