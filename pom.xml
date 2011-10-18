@@ -5,7 +5,7 @@
     <groupId>com.googlecode</groupId>
     <artifactId>jira-suite-utilities</artifactId>
     <name>JIRA Suite Utilities</name>
-    <version>1.0.2-SNAPSHOT</version>
+    <version>1.0.2-enceladus-1</version>
     <packaging>atlassian-plugin</packaging>
 
     <organization>
@@ -158,6 +158,6 @@
         <jira.data.version>4.3</jira.data.version>
         <jira.plugin.version>3.2.4</jira.plugin.version>
 
-        <scm.connection>scm:git:git://github.com/atlassian/jira-suite-utilities.git</scm.connection>
+        <scm.connection>scm:git:git://github.com/kbrazulewicz/jira-suite-utilities.git</scm.connection>
     </properties>
 </project>

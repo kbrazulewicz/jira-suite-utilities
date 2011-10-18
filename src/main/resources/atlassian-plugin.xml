@@ -217,8 +217,8 @@
     </component>
 
     <component key="fieldCollectionsUtils"
-               class="com.googlecode.jsu.util.FieldCollectionsUtils"
-               interface="com.googlecode.jsu.util.FieldCollectionsUtils" public="false">
+               class="com.googlecode.jsu.util.FieldCollectionsUtilsImpl"
+               interface="com.googlecode.jsu.util.FieldCollectionsUtils" public="true">
 
         <description>This utils class exposes common methods to get field collections</description>
     </component>
@@ -231,7 +231,7 @@
     </component>
 
     <component key="workflowUtils"
-               class="com.googlecode.jsu.util.WorkflowUtils"
+               class="com.googlecode.jsu.util.WorkflowUtilsImpl"
                interface="com.googlecode.jsu.util.WorkflowUtils" public="true">
 
         <description>Workflow utils</description>
