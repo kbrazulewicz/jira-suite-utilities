@@ -13,6 +13,15 @@ import java.util.Map;
 
 import com.atlassian.crowd.embedded.api.CrowdService;
 import com.atlassian.jira.ComponentManager;
+import com.atlassian.jira.issue.customfields.MultipleSettableCustomFieldType;
+import com.atlassian.jira.issue.customfields.impl.LabelsCFType;
+import com.atlassian.jira.issue.customfields.impl.MultiSelectCFType;
+import com.atlassian.jira.issue.customfields.impl.ProjectCFType;
+import com.atlassian.jira.issue.customfields.impl.VersionCFType;
+import com.atlassian.jira.issue.customfields.manager.OptionsManager;
+import com.atlassian.jira.issue.fields.config.FieldConfig;
+import com.atlassian.jira.project.Project;
+import com.atlassian.jira.project.ProjectManager;
 import com.atlassian.jira.user.util.UserManager;
 import org.apache.commons.lang.StringUtils;
 import org.ofbiz.core.entity.GenericEntityException;
@@ -68,7 +77,6 @@ import com.opensymphony.workflow.loader.FunctionDescriptor;
  *
  */
 public class WorkflowUtilsImpl implements WorkflowUtils {
-    private static final String CASCADING_SELECT_TYPE = "com.atlassian.jira.plugin.system.customfieldtypes:cascadingselect";
 
     private final WorkflowActionsBean workflowActionsBean = new WorkflowActionsBean();
     private final Logger log = LoggerFactory.getLogger(WorkflowUtils.class);
@@ -83,6 +91,8 @@ public class WorkflowUtilsImpl implements WorkflowUtils {
     private final IssueLinkManager issueLinkManager;
     private final UserManager userManager;
     private final CrowdService crowdService;
+    private final OptionsManager optionsManager;
+    private final ProjectManager projectManager;
 
     /**
      * @param fieldManager
@@ -99,8 +109,8 @@ public class WorkflowUtilsImpl implements WorkflowUtils {
             ProjectComponentManager projectComponentManager, VersionManager versionManager,
             IssueSecurityLevelManager issueSecurityLevelManager, ApplicationProperties applicationProperties,
             FieldCollectionsUtils fieldCollectionsUtils, IssueLinkManager issueLinkManager,
-            UserManager userManager, CrowdService crowdService
-    ) {
+            UserManager userManager, CrowdService crowdService, OptionsManager optionsManager,
+            ProjectManager projectManager) {
         this.fieldManager = fieldManager;
         this.issueManager = issueManager;
         this.projectComponentManager = projectComponentManager;
@@ -111,6 +121,8 @@ public class WorkflowUtilsImpl implements WorkflowUtils {
         this.issueLinkManager = issueLinkManager;
         this.userManager = userManager;
         this.crowdService = crowdService;
+        this.optionsManager = optionsManager;
+        this.projectManager = projectManager;
     }
 
     @Override
@@ -154,12 +166,11 @@ public class WorkflowUtilsImpl implements WorkflowUtils {
                 CustomField customField = (CustomField) field;
                 Object value = issue.getCustomFieldValue(customField);
 
-                // TODO Maybe for cascade we have to create separate manager
-                if (CASCADING_SELECT_TYPE.equals(customField.getCustomFieldType().getKey())) {
+                if (customField.getCustomFieldType() instanceof CascadingSelectCFType) {
                     CustomFieldParams params = (CustomFieldParams) value;
 
                     if (params != null) {
-                        Option parent = (Option) params.getFirstValueForNullKey();
+                        Option parent = (Option) params.getFirstValueForKey(CascadingSelectCFType.PARENT_KEY);
                         Option child = (Option) params.getFirstValueForKey(CascadingSelectCFType.CHILD_KEY);
 
                         if (parent != null) {
@@ -279,6 +290,8 @@ public class WorkflowUtilsImpl implements WorkflowUtils {
                     retVal = issue.getCreated();
                 } else if (fieldId.equals(IssueFieldConstants.RESOLUTION_DATE)) {
                     retVal = issue.getResolutionDate();
+                } else if (fieldId.equals(IssueFieldConstants.LABELS)) {
+                    retVal = issue.getLabels();
                 } else {
                     log.warn("Issue field \"" + fieldId + "\" is not supported.");
 
@@ -342,11 +355,30 @@ public class WorkflowUtilsImpl implements WorkflowUtils {
                 }
             }
 
-            if (newValue instanceof String) {
-                //convert from string to Object
-                CustomFieldParams fieldParams = new CustomFieldParamsImpl(customField, newValue);
-
-                newValue = cfType.getValueFromCustomFieldParams(fieldParams);
+            if (cfType instanceof VersionCFType) {
+                newValue = convertValueToVersions(issue, newValue);
+            } else if (cfType instanceof ProjectCFType) {
+                newValue = convertValueToProject(newValue);
+            } else if (newValue instanceof String) {
+                if (cfType instanceof MultipleSettableCustomFieldType) {
+                    Option option = convertStringToOption(issue, customField, (String) newValue);
+                    if (cfType instanceof MultiSelectCFType) {
+                        newValue = asArrayList(option);
+                    } else if (cfType instanceof CascadingSelectCFType) {
+                        newValue = convertOptionToCustomFieldParamsImpl(customField, option);
+                    } else {
+                        newValue = option;
+                    }
+                } else if (cfType instanceof LabelsCFType && ((String) newValue).contains(" ")) {
+                    throw new UnsupportedOperationException("Setting multiple labels is not implemented");
+                    //JSUTIL-28
+                    //Would need quite different implementation with
+                    //LabelManager.setLabels(...)
+                } else {
+                    //convert from string to Object
+                    CustomFieldParams fieldParams = new CustomFieldParamsImpl(customField, newValue);
+                    newValue = cfType.getValueFromCustomFieldParams(fieldParams);
+                }
             } else if (newValue instanceof Collection<?>) {
                 if ((customField.getCustomFieldType() instanceof AbstractMultiCFType) ||
                         (customField.getCustomFieldType() instanceof MultipleCustomFieldType)) {
@@ -360,6 +392,8 @@ public class WorkflowUtilsImpl implements WorkflowUtils {
 
                     newValue = cfType.getValueFromCustomFieldParams(fieldParams);
                 }
+            } else if (newValue instanceof Option && ! (cfType instanceof MultipleSettableCustomFieldType)) {
+                newValue = ((Option) newValue).getValue();
             }
 
             if (log.isDebugEnabled()) {
@@ -396,7 +430,7 @@ public class WorkflowUtilsImpl implements WorkflowUtils {
                     issue.getModifiedFields().remove(field.getId());
                 }
             }
-        } else {
+        } else { //----- System Fields -----
             final String fieldId = field.getId();
 
             // Special treatment of fields.
@@ -410,23 +444,8 @@ public class WorkflowUtilsImpl implements WorkflowUtils {
                 //					retVal = retCollection;
                 //				}
             } else if (fieldId.equals(IssueFieldConstants.AFFECTED_VERSIONS)) {
-                if (value == null) {
-                    issue.setAffectedVersions(Collections.<Version>emptySet());
-                } else if (value instanceof String) {
-                    Version v = versionManager.getVersion(issue.getProjectObject().getId(), (String) value);
-
-                    if (v != null) {
-                        issue.setAffectedVersions(Arrays.asList(v));
-                    } else {
-                        throw new IllegalArgumentException("Wrong affected version value");
-                    }
-                } else if (value instanceof Version) {
-                    issue.setAffectedVersions(Arrays.asList((Version) value));
-                } else if (value instanceof Collection) {
-                    issue.setAffectedVersions((Collection) value);
-                } else {
-                    throw new IllegalArgumentException("Wrong affected version value");
-                }
+                Collection<Version> versions = convertValueToVersions(issue, value);
+                issue.setAffectedVersions(versions);
             } else if (fieldId.equals(IssueFieldConstants.COMMENT)) {
                 throw new UnsupportedOperationException("Not implemented");
 
@@ -442,39 +461,11 @@ public class WorkflowUtilsImpl implements WorkflowUtils {
                 //					retVal = null;
                 //				}
             } else if (fieldId.equals(IssueFieldConstants.COMPONENTS)) {
-                if (value == null) {
-                    issue.setComponents(Collections.<GenericValue>emptySet());
-                } else if (value instanceof String) {
-                    ProjectComponent v = projectComponentManager.findByComponentName(
-                            issue.getProjectObject().getId(), (String) value
-                    );
-
-                    if (v != null) {
-                        issue.setComponents(Arrays.asList(v.getGenericValue()));
-                    }
-                } else if (value instanceof GenericValue) {
-                    issue.setComponents(Arrays.asList((GenericValue) value));
-                } else if (value instanceof Collection) {
-                    issue.setComponents((Collection) value);
-                } else {
-                    throw new IllegalArgumentException("Wrong component value");
-                }
+                Collection<GenericValue> components = convertValueToComponents(issue, value);
+                issue.setComponents(components);
             } else if (fieldId.equals(IssueFieldConstants.FIX_FOR_VERSIONS)) {
-                if (value == null) {
-                    issue.setFixVersions(Collections.<Version>emptySet());
-                } else if (value instanceof String) {
-                    Version v = versionManager.getVersion(issue.getProjectObject().getId(), (String) value);
-
-                    if (v != null) {
-                        issue.setFixVersions(Arrays.asList(v));
-                    }
-                } else if (value instanceof Version) {
-                    issue.setFixVersions(Arrays.asList((Version) value));
-                } else if (value instanceof Collection) {
-                    issue.setFixVersions((Collection) value);
-                } else {
-                    throw new IllegalArgumentException("Wrong fix version value");
-                }
+                Collection<Version> versions = convertValueToVersions(issue, value);
+                issue.setFixVersions(versions);
             } else if (fieldId.equals(IssueFieldConstants.THUMBNAIL)) {
                 throw new UnsupportedOperationException("Not implemented");
 
@@ -523,10 +514,10 @@ public class WorkflowUtilsImpl implements WorkflowUtils {
                     issue.setResolution((GenericValue) value);
                 } else if (value instanceof Resolution) {
                     issue.setResolutionId(((Resolution) value).getId());
-                } else if (value instanceof String) {
+                } else {
                     Collection<Resolution> resolutions = ComponentManager.getInstance().getConstantsManager().getResolutionObjects();
                     Resolution resolution = null;
-                    String s = ((String) value).trim();
+                    String s = value.toString().trim();
 
                     for (Resolution r : resolutions) {
                         if (r.getName().equalsIgnoreCase(s)) {
@@ -541,8 +532,6 @@ public class WorkflowUtilsImpl implements WorkflowUtils {
                     } else {
                         throw new IllegalArgumentException("Unable to find resolution with name \"" + value + "\"");
                     }
-                } else {
-                    throw new UnsupportedOperationException("Not implemented");
                 }
             } else if (fieldId.equals(IssueFieldConstants.STATUS)) {
                 if (value == null) {
@@ -551,22 +540,14 @@ public class WorkflowUtilsImpl implements WorkflowUtils {
                     issue.setStatus((GenericValue) value);
                 } else if (value instanceof Status) {
                     issue.setStatusId(((Status) value).getId());
-                } else if (value instanceof String) {
-                    Status status = ComponentManager.getInstance().getConstantsManager().getStatusByName((String) value);
+                } else {
+                    Status status = ComponentManager.getInstance().getConstantsManager().getStatusByName(value.toString());
 
                     if (status != null) {
                         issue.setStatusId(status.getId());
                     } else {
                         throw new IllegalArgumentException("Unable to find status with name \"" + value + "\"");
                     }
-                } else {
-                    throw new UnsupportedOperationException("Not implemented");
-                }
-            } else if (fieldId.equals(IssueFieldConstants.PROJECT)) {
-                if (value == null) {
-                    issue.setProject(null);
-                } else {
-                    throw new UnsupportedOperationException("Not implemented");
                 }
             } else if (fieldId.equals(IssueFieldConstants.SECURITY)) {
                 if (value == null) {
@@ -575,11 +556,11 @@ public class WorkflowUtilsImpl implements WorkflowUtils {
                     issue.setSecurityLevel((GenericValue) value);
                 } else if (value instanceof Long) {
                     issue.setSecurityLevelId((Long) value);
-                } else if (value instanceof String) {
+                } else {
                     Collection<GenericValue> levels;
 
                     try {
-                        levels = issueSecurityLevelManager.getSecurityLevelsByName((String) value);
+                        levels = issueSecurityLevelManager.getSecurityLevelsByName(value.toString());
                     } catch (GenericEntityException e) {
                         throw new IllegalArgumentException("Unable to find security level \"" + value + "\"");
                     }
@@ -593,22 +574,10 @@ public class WorkflowUtilsImpl implements WorkflowUtils {
                     }
 
                     issue.setSecurityLevel(levels.iterator().next());
-                } else {
-                    throw new UnsupportedOperationException("Not implemented");
                 }
             } else if (fieldId.equals(IssueFieldConstants.ASSIGNEE)) {
-                if (value == null) {
-                    issue.setAssignee(null);
-                } else if (value instanceof User) {
-                    issue.setAssignee((User) value);
-                } else if (value instanceof String) {
-                    User user = userManager.getUserObject((String) value);
-                    if (null != user) {
-                        issue.setAssignee(user);
-                    } else {
-                        throw new IllegalArgumentException(String.format("User \"%s\" not found", value));
-                    }
-                }
+                User user = convertValueToUser(value);
+                issue.setAssignee(user);
             } else if (fieldId.equals(IssueFieldConstants.DUE_DATE)) {
                 if (value == null) {
                     issue.setDueDate(null);
@@ -634,40 +603,145 @@ public class WorkflowUtilsImpl implements WorkflowUtils {
                     }
                 }
             } else if (fieldId.equals(IssueFieldConstants.REPORTER)) {
-                if (value == null) {
-                    issue.setReporter(null);
-                } else if (value instanceof User) {
-                    issue.setReporter((User) value);
-                } else if (value instanceof String) {
-                    User user = userManager.getUserObject((String) value);
-                    if (user != null) {
-                        issue.setReporter(user);
-                    } else {
-                        throw new IllegalArgumentException(String.format("User \"%s\" not found", value));
-                    }
-                }
+                User user = convertValueToUser(value);
+                issue.setReporter(user);
             } else if (fieldId.equals(IssueFieldConstants.SUMMARY)) {
                 if ((value == null) || (value instanceof String)) {
                     issue.setSummary((String) value);
                 } else {
-                    throw new UnsupportedOperationException("Wrong value type for setting 'Summary'");
+                    issue.setSummary(value.toString());
                 }
             } else if (fieldId.equals(IssueFieldConstants.DESCRIPTION)) {
                 if ((value == null) || (value instanceof String)) {
                     issue.setDescription((String) value);
                 } else {
-                    throw new UnsupportedOperationException("Wrong value type for setting 'Description'");
+                    issue.setDescription(value.toString());
                 }
             } else if (fieldId.equals(IssueFieldConstants.ENVIRONMENT)) {
                 if ((value == null) || (value instanceof String)) {
                     issue.setEnvironment((String) value);
                 } else {
-                    throw new UnsupportedOperationException("Wrong value type for setting 'Environment'");
+                    issue.setEnvironment(value.toString());
                 }
             } else {
                 log.error("Issue field \"" + fieldId + "\" is not supported for setting.");
             }
         }
+    }
+
+    private Option convertStringToOption(Issue issue, CustomField customField, String value) {
+        FieldConfig relevantConfig = customField.getRelevantConfig(issue);
+        List<Option> options = optionsManager.findByOptionValue(value);
+        if (options.size() == 0) {
+            try {
+                Long optionId = Long.parseLong(value);
+                Option option = optionsManager.findByOptionId(optionId);
+                options = Collections.singletonList(option);
+            } catch (NumberFormatException e) { /* IllegalArgumentException will be thrown at end of this method. */ }
+        }
+        for (Option option : options) {
+            FieldConfig fieldConfig = option.getRelatedCustomField();
+            if (relevantConfig != null && relevantConfig.equals(fieldConfig)) {
+                return option;
+            }
+        }
+        throw new IllegalArgumentException("No option found with value '" + value + "' for custom field " + customField.getName() + " on issue " + issue.getKey() + ".");
+    }
+
+    private Collection<GenericValue> convertValueToComponents(Issue issue, Object value) {
+        if (value == null) {
+            return Collections.<GenericValue>emptySet();
+        } else if (value instanceof String) {
+            ProjectComponent v = projectComponentManager.findByComponentName(
+                    issue.getProjectObject().getId(), (String) value
+            );
+
+            if (v != null) {
+                return Arrays.asList(v.getGenericValue());
+            }
+        } else if (value instanceof GenericValue) {
+            return Arrays.asList((GenericValue) value);
+        } else if (value instanceof Collection) {
+            return (Collection<GenericValue>) value;
+        }
+        throw new IllegalArgumentException("Wrong component value '" + value + "'.");
+    }
+
+    private Collection<Version> convertValueToVersions(Issue issue, Object value) {
+        if (value == null) {
+            return Collections.emptySet();
+        } else if (value instanceof String) {
+            Version v = versionManager.getVersion(issue.getProjectObject().getId(), (String) value);
+            if (v != null) {
+                return Arrays.asList(v);
+            }
+        } else if (value instanceof Version) {
+            return (Arrays.asList((Version) value));
+        } else if (value instanceof Collection) {
+            return (Collection<Version>) value;
+        }
+        throw new IllegalArgumentException("Wrong version value '" + value + "'.");
+    }
+
+    private User convertValueToUser(Object value) {
+        if (value == null || value instanceof User) {
+            return  (User) value;
+        } else if (value instanceof String) {
+            User user = userManager.getUserObject((String) value);
+            if (user != null) {
+                return user;
+            }
+        }
+        throw new IllegalArgumentException("User '" + value + "' not found.");
+    }
+
+    private GenericValue convertValueToProject(Object value) {
+        GenericValue project;
+        if (value == null || value instanceof GenericValue) {
+            return (GenericValue) value;
+        } else if (value instanceof Project) {
+            return ((Project) value).getGenericValue();
+        } else if (value instanceof Long) {
+            project = projectManager.getProject((Long) value);
+            if (project != null) return project;
+        } else {
+            String s = value.toString();
+            try {
+                Long id = Long.parseLong(s);
+                project = projectManager.getProject(id);
+                if (project != null) return project;
+            } catch (NumberFormatException e) {
+                project = projectManager.getProjectByKey(s);
+                if (project == null) {
+                    project = projectManager.getProjectByName(s);
+                }
+                if (project != null) return project;
+            }
+        }
+        throw new IllegalArgumentException("Wrong project value '" + value + "'.");
+    }
+
+    private CustomFieldParamsImpl convertOptionToCustomFieldParamsImpl(CustomField customField, Option option) {
+        CustomFieldParamsImpl params = new CustomFieldParamsImpl(customField);
+        Option upperOption = option.getParentOption();
+        Collection<String> val;
+        if (upperOption != null) {
+            val = asArrayList(upperOption.getOptionId().toString());
+            params.put(CascadingSelectCFType.PARENT_KEY, val);
+            val = asArrayList(option.getOptionId().toString());
+            params.put(CascadingSelectCFType.CHILD_KEY, val);
+        } else {
+            val = asArrayList(option.getOptionId().toString());
+            params.put(CascadingSelectCFType.PARENT_KEY, val);
+        }
+        params.transformStringsToObjects();
+        return params;
+    }
+
+    private <T> ArrayList<T> asArrayList(T value) {
+        ArrayList<T> list = new ArrayList<T>(1);
+        list.add(value);
+        return list;
     }
 
     @Override

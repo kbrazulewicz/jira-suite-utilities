@@ -5,7 +5,6 @@ import com.atlassian.jira.issue.MutableIssue;
 import com.atlassian.jira.issue.fields.Field;
 import com.atlassian.jira.issue.fields.screen.FieldScreen;
 import com.atlassian.jira.issue.util.IssueChangeHolder;
-import com.opensymphony.user.Group;
 import com.opensymphony.workflow.loader.AbstractDescriptor;
 import com.opensymphony.workflow.loader.ActionDescriptor;
 
@@ -54,6 +53,7 @@ public interface WorkflowUtils
      * @param value
      */
     void setFieldValue(MutableIssue issue, Field field, Object value, IssueChangeHolder changeHolder);
+
 
     /**
      * Method sets value for issue field. Field was defined as string

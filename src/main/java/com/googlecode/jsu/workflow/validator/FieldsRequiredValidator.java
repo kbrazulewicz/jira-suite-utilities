@@ -68,9 +68,11 @@ public class FieldsRequiredValidator extends GenericValidator {
 
         for (Field field : fieldsSelected) {
             if (fieldCollectionsUtils.isIssueHasField(issue, field)) {
-                Object fieldValue = workflowUtils.getFieldValueFromIssue(issue, field);
-                if (fieldValue == null && IssueFieldConstants.COMMENT.equals(field.getId())) {
+                Object fieldValue;
+                if (IssueFieldConstants.COMMENT.equals(field.getId())) {
                     fieldValue = getTransitionComment();
+                } else {
+                    fieldValue = workflowUtils.getFieldValueFromIssue(issue, field);
                 }
 
                 if (log.isDebugEnabled()) {
